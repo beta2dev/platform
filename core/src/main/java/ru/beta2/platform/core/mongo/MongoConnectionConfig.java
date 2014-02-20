@@ -27,28 +27,4 @@ public class MongoConnectionConfig
         return cfg.getInt("port", 27017);
     }
 
-//    @Override
-//    public boolean hasAuth()
-//    {
-//        return getUsername() != null;
-//    }
-//
-//    @Override
-//    public String getUsername()
-//    {
-//        return cfg.getString("username", null);
-//    }
-//
-//    @Override
-//    public char[] getPassword()
-//    {
-//        String psswd = cfg.getString("password", null);
-//        return psswd == null ? null : psswd.toCharArray();
-//    }
-//
-//    @Override
-//    public String getAuthDB()
-//    {
-//        return cfg.getString("authDB", "admin");
-//    }
 }

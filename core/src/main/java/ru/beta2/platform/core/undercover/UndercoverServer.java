@@ -96,8 +96,7 @@ public class UndercoverServer implements Startable, UndercoverService
                     // do nothing
                 }
                 else {
-                    exchange.setResponseCode(StatusCodes.METHOD_NOT_ALLOWED);
-                    exchange.getResponseHeaders().put(Headers.ALLOW, "GET,HEAD");
+                    sendMethodNotAllowed("GET,HEAD", exchange);
                 }
                 return;
             }
@@ -115,14 +114,19 @@ public class UndercoverServer implements Startable, UndercoverService
                     // do nothing
                 }
                 else {
-                    exchange.setResponseCode(StatusCodes.METHOD_NOT_ALLOWED);
-                    exchange.getResponseHeaders().put(Headers.ALLOW, cfg.isCoverMetadataEnabled() ? "POST,GET,HEAD" : "POST,HEAD");
+                    sendMethodNotAllowed(cfg.isCoverMetadataEnabled() ? "POST,GET,HEAD" : "POST,HEAD", exchange);
                 }
             }
             else {
                 exchange.setResponseCode(StatusCodes.NOT_FOUND);
             }
         }
+    }
+
+    private void sendMethodNotAllowed( String allowedMethods, HttpServerExchange exchange)
+    {
+        exchange.setResponseCode(StatusCodes.METHOD_NOT_ALLOWED);
+        exchange.getResponseHeaders().put(Headers.ALLOW, allowedMethods);
     }
 
     private void invokeSkeleton(HessianSkeleton skeleton, HttpServerExchange exchange) throws Exception
@@ -151,7 +155,7 @@ public class UndercoverServer implements Startable, UndercoverService
             boolean metadataEnabled = cfg.isCoverMetadataEnabled();
             for (Map.Entry<String, HessianSkeleton> e : skeletons.entrySet()) {
                 if (metadataEnabled) {
-                    sender.send(e.getKey() + " [" + e.getValue().getAPIClassName() + "]\n");
+                    sender.send(e.getKey() + ":" + e.getValue().getAPIClassName() + "\n");
                 }
                 else {
                     sender.send(e.getKey());

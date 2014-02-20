@@ -1,1 +1,4 @@
-/core/target
+/*.ipr
+/*.iws
+/*/*.iml
+/*/target

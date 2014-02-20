@@ -41,28 +41,37 @@ public abstract class AssemblyUnit implements Startable
     @Override
     public synchronized void start()
     {
-        log.trace("Starting assembly unit: {}", getConfigName());
+        String assemblyName = getAssemblyName();
+
+        log.trace("Starting assembly unit: {}", assemblyName);
         config = configService.getConfig(getConfigName());
         configListenerRegistration = config.addListener(new ConfigHandler());
 
         createAndStartPico();
-        log.info("Assembly unit started: {}", getConfigName());
+        log.info("Assembly unit started: {}", assemblyName);
     }
 
     @Override
     public synchronized void stop()
     {
-        log.trace("Stopping assembly unit: {}", getConfigName());
+        String assemblyName = getAssemblyName();
+
+        log.trace("Stopping assembly unit: {}", assemblyName);
         stopPico();
 
         configListenerRegistration.removeHandler();
         config = null;
-        log.info("Assembly unit stopped: {}", getConfigName());
+        log.info("Assembly unit stopped: {}", assemblyName);
+    }
+
+    protected String getAssemblyName()
+    {
+        return getConfigName();
     }
 
     protected abstract String getConfigName();
 
-    protected abstract void populatePico(MutablePicoContainer pico);
+    protected abstract void populatePico(MutablePicoContainer pico) throws Exception;
 
     protected String getConfigValue()
     {
@@ -85,17 +94,25 @@ public abstract class AssemblyUnit implements Startable
 
     private synchronized void createAndStartPico()
     {
-        log.trace("Create pico");
+        String assemblyName = getAssemblyName();
+
+        log.trace("Create pico: {}", assemblyName);
         pico = containerFactory.createPicoContainer();
-        log.trace("Populate pico");
-        populatePico(pico);
-        log.trace("Start pico");
+        log.trace("Populate pico: {}", assemblyName);
+        try {
+            populatePico(pico);
+        }
+        catch (Exception e) {
+            log.error("Error populating pico: " + assemblyName, e);
+            throw new RuntimeException("Error populating pico", e);
+        }
+        log.trace("Start pico: {}", assemblyName);
         pico.start();
     }
 
     private synchronized void stopPico()
     {
-        log.trace("Stop pico");
+        log.trace("Stop pico: {}", getAssemblyName());
         pico.stop();
         pico = null;
     }
@@ -106,10 +123,12 @@ public abstract class AssemblyUnit implements Startable
         public void onConfigChange(Config config)
         {
             synchronized (AssemblyUnit.this) {
-                log.trace("Restarting assembly unit: {}", getConfigName());
+                String assemblyName = getAssemblyName();
+
+                log.trace("Restarting assembly unit: {}", assemblyName);
                 stopPico();
                 createAndStartPico();
-                log.info("Assembly unit restarted: {}", getConfigName());
+                log.info("Assembly unit restarted: {}", assemblyName);
             }
         }
     }

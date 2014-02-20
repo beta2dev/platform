@@ -26,20 +26,11 @@ public class MongoComponent extends AbstractAdapter<MongoClient>
     {
         MongoConnectionConfig cfg = container.getComponent(MongoConnectionConfig.class);
         if (cfg == null) {
-            throw new AbstractInjector.UnsatisfiableDependenciesException("MongoComponent is required MongoConnectionConfiguration");
+            throw new AbstractInjector.UnsatisfiableDependenciesException("MongoComponent is required MongoConnectionConfig");
         }
 
-//        MongoClient mongo = null;
         try {
             return new MongoClient(cfg.getHost(), cfg.getPort());
-//            mongo = new MongoClient(cfg.getHost(), cfg.getPort());
-//            if (cfg.hasAuth()) {
-//                DB authDB = mongo.getDB(cfg.getAuthDB());
-//                if (!authDB.authenticate(cfg.getUsername(), cfg.getPassword())) {
-//                    throw new PicoCompositionException("MongoDB authentication failed");
-//                }
-//            }
-//            return mongo;
         }
         catch (UnknownHostException e) {
             throw new PicoCompositionException("Error connecting MongoDB", e);
@@ -50,7 +41,7 @@ public class MongoComponent extends AbstractAdapter<MongoClient>
     public void verify(PicoContainer container) throws PicoCompositionException
     {
         if (container.getComponentAdapter(MongoConnectionConfig.class) == null) {
-            throw new AbstractInjector.UnsatisfiableDependenciesException("MongoComponent is required MongoConnectionConfiguration");
+            throw new AbstractInjector.UnsatisfiableDependenciesException("MongoComponent is required MongoConnectionConfig");
         }
     }
 
