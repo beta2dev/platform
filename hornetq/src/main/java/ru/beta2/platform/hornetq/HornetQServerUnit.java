@@ -18,10 +18,10 @@ import static org.picocontainer.Characteristics.CACHE;
  * Date: 20.02.14
  * Time: 19:20
  */
-public class HornetQUnit extends AssemblyUnit
+public class HornetQServerUnit extends AssemblyUnit
 {
 
-    public HornetQUnit(PicoContainerFactory containerFactory, ConfigService configService)
+    public HornetQServerUnit(PicoContainerFactory containerFactory, ConfigService configService)
     {
         super(containerFactory, configService);
     }
@@ -29,7 +29,7 @@ public class HornetQUnit extends AssemblyUnit
     @Override
     protected String getConfigName()
     {
-        return "hornetq";
+        return "hornetq-server";
     }
 
     @Override

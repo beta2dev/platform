@@ -45,6 +45,7 @@ public class PlatformBootstrap
 
     void run()
     {
+        long startAt = System.currentTimeMillis();
         log.info("Begin bootstrap");
         Runtime.getRuntime().addShutdownHook(new Shutdown());
         try {
@@ -80,6 +81,8 @@ public class PlatformBootstrap
             log.error("Error parsing platform properties file", e);
             throw new RuntimeException(e);
         }
+        long elapsed = System.currentTimeMillis() - startAt;
+        log.info("*** SERVER IS STARTED in " + elapsed + " ms ***");
     }
 
     //

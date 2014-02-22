@@ -77,7 +77,6 @@ public class HornetQServerComponent extends ConstructorInjector<HornetQServer> i
     @Override
     public boolean isLazy(ComponentAdapter<?> adapter)
     {
-        System.out.println("*** IS LAZILY ***");
         return false;
     }
 }

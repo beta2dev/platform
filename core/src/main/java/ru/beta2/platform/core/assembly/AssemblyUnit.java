@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import ru.beta2.platform.core.config.Config;
 import ru.beta2.platform.core.config.ConfigListener;
 import ru.beta2.platform.core.config.ConfigService;
+import ru.beta2.platform.core.config.StringPropertiesConfiguration;
 import ru.beta2.platform.core.util.HandlerRegistration;
 
 import java.io.StringReader;
@@ -57,7 +58,7 @@ public abstract class AssemblyUnit implements Startable
         String assemblyName = getAssemblyName();
 
         log.trace("Stopping assembly unit: {}", assemblyName);
-        stopPico();
+        stopAndDisposePico();
 
         configListenerRegistration.removeHandler();
         config = null;
@@ -80,11 +81,8 @@ public abstract class AssemblyUnit implements Startable
 
     protected Configuration createConfiguration()
     {
-        PropertiesConfiguration cfg = new PropertiesConfiguration();
-        cfg.setThrowExceptionOnMissing(true);
         try {
-            cfg.load(new StringReader(getConfigValue()));
-            return cfg;
+            return new StringPropertiesConfiguration(getConfigValue());
         }
         catch (ConfigurationException e) {
             log.error("Error create configuration object", e);
@@ -110,10 +108,14 @@ public abstract class AssemblyUnit implements Startable
         pico.start();
     }
 
-    private synchronized void stopPico()
+    private synchronized void stopAndDisposePico()
     {
-        log.trace("Stop pico: {}", getAssemblyName());
+        String assemblyName = getAssemblyName();
+
+        log.trace("Stop pico: {}", assemblyName);
         pico.stop();
+        log.trace("Dispose pico: {}", assemblyName);
+        pico.dispose();
         pico = null;
     }
 
@@ -126,7 +128,7 @@ public abstract class AssemblyUnit implements Startable
                 String assemblyName = getAssemblyName();
 
                 log.trace("Restarting assembly unit: {}", assemblyName);
-                stopPico();
+                stopAndDisposePico();
                 createAndStartPico();
                 log.info("Assembly unit restarted: {}", assemblyName);
             }
