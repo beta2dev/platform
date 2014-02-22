@@ -1,0 +1,7 @@
+<configuration>
+
+    <modules>
+        <module xmlns:a="b2tplxml" a:bindlist="$modules" name="@name" title="@title"/>
+    </modules>
+
+</configuration>

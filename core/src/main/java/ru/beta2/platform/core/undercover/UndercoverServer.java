@@ -38,10 +38,12 @@ public class UndercoverServer implements Startable, UndercoverService
     public UndercoverServer(UndercoverConfig cfg)
     {
         this.cfg = cfg;
-        server = Undertow.builder()
-                .addHttpListener(cfg.getPort(), cfg.getHost())
-                .setHandler(new UndercoverHandler())
-                .build();
+        server = cfg.isEnabled()
+                ? Undertow.builder()
+                    .addHttpListener(cfg.getPort(), cfg.getHost())
+                    .setHandler(new UndercoverHandler())
+                    .build()
+                : null;
     }
 
     @Override
@@ -63,17 +65,24 @@ public class UndercoverServer implements Startable, UndercoverService
     @Override
     public void start()
     {
-        log.trace("Starting UndercoverServer");
-        server.start();
-        log.info("UndercoverServer started");
+        if (server != null) {
+            log.trace("Starting UndercoverServer");
+            server.start();
+            log.info("UndercoverServer started");
+        }
+        else {
+            log.info("UndercoverServer is disabled");
+        }
     }
 
     @Override
     public void stop()
     {
-        log.trace("Stopping UndercoverServer");
-        server.stop();
-        log.info("UndercoverServer stopped");
+        if (server != null) {
+            log.trace("Stopping UndercoverServer");
+            server.stop();
+            log.info("UndercoverServer stopped");
+        }
     }
 
     private class UndercoverHandler implements HttpHandler

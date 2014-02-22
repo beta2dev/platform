@@ -4,6 +4,7 @@ import com.mongodb.*;
 import org.picocontainer.Startable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.beta2.platform.core.undercover.UndercoverService;
 import ru.beta2.platform.core.util.HandlerRegistration;
 
 import java.util.*;
@@ -20,15 +21,19 @@ public class ConfigServer implements ConfigService, Startable
 
     private final ConfigServerConfig cfg;
     private final MongoClient mongo;
+    private final UndercoverService undercover;
+
+    private HandlerRegistration undercoverRegistration;
 
     private DBCollection configCollection;
 
     private final Map<String, ConfigImpl> loaded = Collections.synchronizedMap(new HashMap<String, ConfigImpl>());
 
-    public ConfigServer(ConfigServerConfig cfg, MongoClient mongo)
+    public ConfigServer(ConfigServerConfig cfg, MongoClient mongo, UndercoverService undercover)
     {
         this.cfg = cfg;
         this.mongo = mongo;
+        this.undercover = undercover;
     }
 
     @Override
@@ -66,7 +71,7 @@ public class ConfigServer implements ConfigService, Startable
     @Override
     public void setConfigValue(String name, String value)
     {
-        log.trace("Set config: {}", name);
+        log.info("Set config: {}", name);
         storeConfigValue(name, value);
         getConfig(name).setValue(value);
     }
@@ -77,13 +82,15 @@ public class ConfigServer implements ConfigService, Startable
         log.trace("Starting ConfigServer");
         configCollection = mongo.getDB(cfg.getConfigDB()).getCollection(cfg.getConfigCollection());
         configCollection.ensureIndex("name");
+        undercoverRegistration = undercover.registerCover("/config", ConfigServiceCover.class, this);
         log.info("ConfigServer started");
     }
 
     @Override
     public void stop()
     {
-        // do nothing here
+        undercoverRegistration.removeHandler();
+        undercoverRegistration = null;
     }
 
     //

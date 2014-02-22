@@ -1,0 +1,32 @@
+<resource>
+
+    <data-model>
+        <list path="/configs/config">
+            <columns>
+                <column meta="id" title="Имя" path="@name"/>
+
+                <column meta="uri" visible="false" path="@uri"/>
+            </columns>
+        </list>
+    </data-model>
+
+    <operations>
+        <get format="xml"/>
+    </operations>
+
+    <actions>
+        <refresh/>
+        <separator/>
+
+        <create uri="ID"/>
+
+        <edit id="edit" selection="list"/>
+
+        <separator/>
+    </actions>
+
+    <actions name="item-inplace">
+        <action ref="edit" title="edit"/>
+    </actions>
+
+</resource>

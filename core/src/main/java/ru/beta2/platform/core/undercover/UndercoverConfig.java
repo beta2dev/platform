@@ -17,6 +17,11 @@ public class UndercoverConfig
         this.cfg = cfg;
     }
 
+    public boolean isEnabled()
+    {
+        return cfg.getBoolean("enabled", false);
+    }
+
     public String getHost()
     {
         return cfg.getString("host", "127.0.0.1");

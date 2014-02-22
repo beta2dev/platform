@@ -1,0 +1,3 @@
+<configs>
+    <config xmlns:a="b2tplxml" a:bindlist="$configNames" name="@it" uri="@it"/>
+</configs>

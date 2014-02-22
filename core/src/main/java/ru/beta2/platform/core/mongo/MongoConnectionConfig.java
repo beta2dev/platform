@@ -19,7 +19,7 @@ public class MongoConnectionConfig
 
     public String getHost()
     {
-        return cfg.getString("host", "localhost");
+        return cfg.getString("host", "127.0.0.1");
     }
 
     public int getPort()

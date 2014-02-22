@@ -127,7 +127,7 @@ public abstract class AssemblyUnit implements Startable
             synchronized (AssemblyUnit.this) {
                 String assemblyName = getAssemblyName();
 
-                log.trace("Restarting assembly unit: {}", assemblyName);
+                log.info("Restarting assembly unit: {}", assemblyName);
                 stopAndDisposePico();
                 createAndStartPico();
                 log.info("Assembly unit restarted: {}", assemblyName);
