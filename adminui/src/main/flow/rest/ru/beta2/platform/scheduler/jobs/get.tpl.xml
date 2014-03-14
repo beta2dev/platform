@@ -1,0 +1,3 @@
+<jobs>
+    <job xmlns:a="b2tplxml" a:bindlist="$jobs" group="@group" name="@name" uri="HEYHEY"/>
+</jobs>

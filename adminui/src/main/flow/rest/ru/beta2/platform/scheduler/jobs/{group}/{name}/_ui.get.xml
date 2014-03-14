@@ -1,0 +1,37 @@
+<resource>
+
+    <data-model>
+        <object path="/job">
+            <properties>
+                <property name="group" title="Группа" type="string" path="@group"/>
+                <property name="name" title="Имя" type="string" path="@name"/>
+
+                <!-- todo !!! implement radiogroup or dropdownlist -->
+                <property name="type" title="Тип" type="string" path="@type"/>
+
+                <property name="data" title="Параметры" type="string" path="data/text()">
+                    <editor type="text" rows="20"/>
+                </property>
+
+                <property name="description" title="Описание" type="string" path="description/text()">
+                    <editor type="text" rows="5"/>
+                </property>
+            </properties>
+        </object>
+    </data-model>
+
+    <operations>
+        <get format="xml"/>
+        <put name="create" format="json"/>
+        <put name="update" format="json"/>
+    </operations>
+
+    <actions>
+        <save/>
+
+        <separator/>
+
+        <cancel/>
+    </actions>
+
+</resource>

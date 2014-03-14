@@ -8,6 +8,7 @@ import org.picocontainer.injectors.ConstructorInjector;
 import org.picocontainer.parameters.ComponentParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.beta2.platform.core.util.LifecycleException;
 
 /**
  * User: Inc
@@ -44,7 +45,7 @@ public class HornetQServerComponent extends ConstructorInjector<HornetQServer> i
         }
         catch (Exception e) {
             log.error("Error starting HornetQServer", e);
-            throw new HornetQLifecycleException("HornetQServer start failed", e);
+            throw new LifecycleException("HornetQServer start failed", e);
         }
     }
 
@@ -58,7 +59,7 @@ public class HornetQServerComponent extends ConstructorInjector<HornetQServer> i
         }
         catch (Exception e) {
             log.error("Error stopping HornetQServer", e);
-            throw new HornetQLifecycleException("HornetQServer stop failed", e);
+            throw new LifecycleException("HornetQServer stop failed", e);
         }
     }
 

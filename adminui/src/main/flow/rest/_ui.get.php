@@ -1,7 +1,8 @@
 <?php
 
 $availableModules = [
-    'ru.beta2.platform.core.config.ConfigServiceCover' => ['name'=>'ru.beta2.platform.core.config', 'title'=>'Конфигурация']
+    'ru.beta2.platform.core.config.ConfigServiceCover' => ['name'=>'ru.beta2.platform.core.config', 'title'=>'Конфигурация'],
+    'ru.beta2.platform.scheduler.SchedulerCover' => ['name'=>'ru.beta2.platform.scheduler.jobs', 'title'=>'Планировщик'],
 ];
 
 $coversData = file_get_contents(b2config()->platform['undercoverUrl']);

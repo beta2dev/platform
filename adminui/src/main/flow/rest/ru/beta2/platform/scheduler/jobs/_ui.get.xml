@@ -1,0 +1,34 @@
+<resource>
+
+    <data-model>
+        <list path="/jobs/job">
+            <columns>
+                <!--<column meta="id" title="Имя" path="@name"/>-->
+                <column title="Группа" path="@group"/>
+                <column title="Имя" path="@name"/>
+
+                <column meta="uri" visible="false" path="@uri"/>
+            </columns>
+        </list>
+    </data-model>
+
+    <operations>
+        <get format="xml"/>
+    </operations>
+
+    <actions>
+        <refresh/>
+        <separator/>
+
+        <create uri="GROUP/NAME"/>
+
+        <edit id="edit" selection="list"/>
+
+        <separator/>
+    </actions>
+
+    <actions name="item-inplace">
+        <action ref="edit" title="edit"/>
+    </actions>
+
+</resource>

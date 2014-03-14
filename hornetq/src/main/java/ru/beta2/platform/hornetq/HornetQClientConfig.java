@@ -28,4 +28,9 @@ public class HornetQClientConfig
     {
         return cfg.getInt("initialConnectAttempts", -1);
     }
+
+    public boolean isBlockOnAcknowledge()
+    {
+        return cfg.getBoolean("blockOnAcknowledge", true);
+    }
 }

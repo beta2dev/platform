@@ -46,6 +46,7 @@ public class HornetQClientComponent extends AbstractAdapter<ServerLocator> imple
         ServerLocator serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
         serverLocator.setReconnectAttempts(cfg.getReconnectAttempts());
         serverLocator.setInitialConnectAttempts(cfg.getInitialConnectAttempts());
+        serverLocator.setBlockOnAcknowledge(cfg.isBlockOnAcknowledge());
         return serverLocator;
     }
 

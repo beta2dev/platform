@@ -51,7 +51,7 @@ public class HornetQServerUnit extends AssemblyUnit
             return cfg;
         }
 
-        log.debug("Parse XML configuration");
+        log.trace("Parse XML configuration");
         Element e = XMLUtil.stringToElement(XMLUtil.replaceSystemProps(xml));
 
         FileConfigurationParser parser = new FileConfigurationParser();

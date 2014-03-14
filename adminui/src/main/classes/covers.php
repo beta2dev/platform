@@ -15,9 +15,23 @@ class covers
         return $cover;
     }
 
-    private static function createCoverProxy($path)
+    static function scheduler()
     {
-        return new \HessianClient(\b2\util\Path::concat(b2config()->platform['undercoverUrl'], $path));
+        static $scheduler;
+        if (!$scheduler) {
+            $options = null;
+            $options = new \HessianOptions();
+//            $options->typeMap['ru\beta2\platform\scheduler\JobDescriptor'] = 'ru.beta2.platform.scheduler.JobDescriptor';
+            $options->typeMap['JobDescriptor'] = 'ru.beta2.platform.scheduler.JobDescriptor';
+            $options->before = function($ctx) {var_dump($ctx->payload);};
+            $scheduler = self::createCoverProxy('scheduler', $options);
+        }
+        return $scheduler;
+    }
+
+    private static function createCoverProxy($path, $options = null)
+    {
+        return new \HessianClient(\b2\util\Path::concat(b2config()->platform['undercoverUrl'], $path), $options);
     }
 
 }

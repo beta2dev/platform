@@ -143,7 +143,14 @@ public class UndercoverServer implements Startable, UndercoverService
         log.trace("Invoke skeleton: {}", skeleton.getAPIClassName());
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "x-application/hessian");
         exchange.startBlocking();
-        skeleton.invoke(exchange.getInputStream(), exchange.getOutputStream(), serializerFactory);
+        try {
+            skeleton.invoke(exchange.getInputStream(), exchange.getOutputStream(), serializerFactory);
+        }
+        catch (Exception e) {
+            log.error("Error invoke skeleton", e);
+            throw e;
+        }
+
         exchange.endExchange();
     }
 
@@ -160,16 +167,18 @@ public class UndercoverServer implements Startable, UndercoverService
         log.trace("Send covers list");
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
         synchronized (skeletons) {
-            Sender sender = exchange.getResponseSender();
             boolean metadataEnabled = cfg.isCoverMetadataEnabled();
+            StringBuilder b = new StringBuilder();
             for (Map.Entry<String, HessianSkeleton> e : skeletons.entrySet()) {
+                log.debug("There is {}:{}", e.getKey(), e.getValue().getAPIClassName());
                 if (metadataEnabled) {
-                    sender.send(e.getKey() + ":" + e.getValue().getAPIClassName() + "\n");
+                    b.append(e.getKey()).append(":").append(e.getValue().getAPIClassName()).append("\n");
                 }
                 else {
-                    sender.send(e.getKey());
+                    b.append(e.getKey()).append("\n");
                 }
             }
+            exchange.getResponseSender().send(b.toString());
         }
         exchange.endExchange();
     }

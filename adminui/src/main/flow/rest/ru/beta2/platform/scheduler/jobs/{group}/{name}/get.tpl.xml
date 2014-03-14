@@ -1,0 +1,4 @@
+<job xmlns:a="b2tplxml" a:bind="$job" group="@group" name="@name" type="@type">
+    <description a:text="@description"/>
+    <data a:text="$dataText"/>
+</job>

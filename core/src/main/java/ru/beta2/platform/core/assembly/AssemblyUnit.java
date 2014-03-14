@@ -2,18 +2,14 @@ package ru.beta2.platform.core.assembly;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration.XMLConfiguration;
 import org.picocontainer.MutablePicoContainer;
 import org.picocontainer.Startable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.beta2.platform.core.config.Config;
-import ru.beta2.platform.core.config.ConfigListener;
-import ru.beta2.platform.core.config.ConfigService;
-import ru.beta2.platform.core.config.StringPropertiesConfiguration;
+import ru.beta2.platform.core.config.*;
 import ru.beta2.platform.core.util.HandlerRegistration;
-
-import java.io.StringReader;
 
 /**
  * User: Inc
@@ -90,6 +86,17 @@ public abstract class AssemblyUnit implements Startable
         }
     }
 
+    protected HierarchicalConfiguration createXMLConfiguration()
+    {
+        try {
+            return new StringXMLConfiguration(getConfigValue());
+        }
+        catch (ConfigurationException e) {
+            log.error("Error create XML configuration object", e);
+            throw new RuntimeException("Error create XML configuration object", e);
+        }
+    }
+
     private synchronized void createAndStartPico()
     {
         String assemblyName = getAssemblyName();
@@ -129,6 +136,7 @@ public abstract class AssemblyUnit implements Startable
 
                 log.info("Restarting assembly unit: {}", assemblyName);
                 stopAndDisposePico();
+                log.trace("Assembly unit ready to restart: {}", assemblyName);
                 createAndStartPico();
                 log.info("Assembly unit restarted: {}", assemblyName);
             }
