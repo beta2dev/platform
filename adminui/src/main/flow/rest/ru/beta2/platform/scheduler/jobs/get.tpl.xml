@@ -1,3 +1,5 @@
 <jobs>
-    <job xmlns:a="b2tplxml" a:bindlist="$jobs" group="@group" name="@name" uri="HEYHEY"/>
+    <job xmlns:a="b2tplxml" a:bindlist="$jobs" group="@group" name="@name" uri="#{@group/@name}">
+        <triggers uri="#{@group/@name/triggers}"/>
+    </job>
 </jobs>

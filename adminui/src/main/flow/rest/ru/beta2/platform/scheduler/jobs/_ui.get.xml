@@ -23,12 +23,13 @@
         <create uri="GROUP/NAME"/>
 
         <edit id="edit" selection="list"/>
+        <view id="view-triggers" selection="list" title="Триггеры" uri-path="triggers/@uri"/>
 
-        <separator/>
     </actions>
 
     <actions name="item-inplace">
         <action ref="edit" title="edit"/>
+        <action ref="view-triggers" title="trgs"/>
     </actions>
 
 </resource>

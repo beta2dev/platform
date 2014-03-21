@@ -10,13 +10,6 @@
 
     <dependencies>
 
-
-        <dependency>
-            <groupId>ru.beta2.eco</groupId>
-            <artifactId>beta2-eco-config</artifactId>
-            <version>DEV</version>
-        </dependency>
-
         <dependency>
             <groupId>org.picocontainer</groupId>
             <artifactId>picocontainer</artifactId>

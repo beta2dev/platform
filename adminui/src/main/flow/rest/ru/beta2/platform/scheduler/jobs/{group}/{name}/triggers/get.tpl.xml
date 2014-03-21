@@ -1,0 +1,15 @@
+<job>
+    <triggers>
+        <trigger xmlns:a="b2tplxml"
+                 a:bindlist="$triggers"
+                 a:properties="name,group,priority,startTime,endTime,nextFireTime,previousFireTime,finalFireTime,state"
+                 uri="#{@group/@name}"
+                >
+            <misfire-instruction title="@misfireInstructionTitle" a:text="@misfireInstruction"/>
+            <description a:text="@description"/>
+            <pause uri="#{@group/@name/pause}"/>
+            <resume uri="#{@group/@name/resume}"/>
+            <delete uri="#{@group/@name/delete}"/>
+        </trigger>
+    </triggers>
+</job>

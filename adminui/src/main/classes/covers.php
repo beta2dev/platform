@@ -21,9 +21,12 @@ class covers
         if (!$scheduler) {
             $options = null;
             $options = new \HessianOptions();
-//            $options->typeMap['ru\beta2\platform\scheduler\JobDescriptor'] = 'ru.beta2.platform.scheduler.JobDescriptor';
-            $options->typeMap['JobDescriptor'] = 'ru.beta2.platform.scheduler.JobDescriptor';
-            $options->before = function($ctx) {var_dump($ctx->payload);};
+            $options->typeMap['scheduler\ObjectKey'] = 'ru.beta2.platform.scheduler.ObjectKey';
+            $options->typeMap['scheduler\JobDescriptor'] = 'ru.beta2.platform.scheduler.JobDescriptor';
+            $options->typeMap['scheduler\TriggerDescritpr'] = 'ru.beta2.platform.scheduler.TriggerDescriptor';
+            $options->typeMap['scheduler\TriggerInfo'] = 'ru.beta2.platform.scheduler.TriggerInfo';
+//            $options->before = function($ctx) {var_dump($ctx->payload);};
+//            $options->after = function($ctx) {var_dump($ctx->payload);};
             $scheduler = self::createCoverProxy('scheduler', $options);
         }
         return $scheduler;

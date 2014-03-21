@@ -27,7 +27,8 @@ public class TaskJob implements Job
     @Override
     public void execute(JobExecutionContext ctx) throws JobExecutionException
     {
-        ClientMessage msg = session.createMessage(true);
-
+        System.out.println("HEY MR PITKIN TODO");
+//        ClientMessage msg = session.createMessage(true);
+        // todo !!! implement
     }
 }

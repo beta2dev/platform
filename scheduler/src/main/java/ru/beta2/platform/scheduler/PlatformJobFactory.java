@@ -109,17 +109,46 @@ public class PlatformJobFactory implements JobFactory, JobRegistry
     }
 
     @Override
-    public HandlerRegistration addJobFactory(final Class<? extends Job> jobClass, JobFactory jobFactory)
+    public HandlerRegistration addJobFactory(final Class<? extends Job> jobClass, final JobFactory jobFactory)
     {
-        container.addComponent(jobClass, jobFactory);
-        return new HandlerRegistration()
+        return addJobComponent(new AbstractAdapter<Job>(jobClass, jobClass)
         {
             @Override
-            public void removeHandler()
+            public Job getComponentInstance(PicoContainer picoContainer, Type type) throws PicoCompositionException
             {
-                container.removeComponent(jobClass);
+                try {
+                    return jobFactory.newJob(
+                            picoContainer.getComponent(TriggerFiredBundle.class),
+                            picoContainer.getComponent(Scheduler.class)
+                    );
+                }
+                catch (SchedulerException e) {
+                    log.error("Error create new job through factory");
+                    throw new PicoCompositionException("Error create new job through factory", e);
+                }
             }
-        };
+
+            @Override
+            public void verify(PicoContainer picoContainer) throws PicoCompositionException
+            {
+            }
+
+            @Override
+            public String getDescriptor()
+            {
+                return "JobFactoryAdapter";
+            }
+        });
+        // todo !!! remove after testing
+//        container.addComponent(jobClass, jobFactory);
+//        return new HandlerRegistration()
+//        {
+//            @Override
+//            public void removeHandler()
+//            {
+//                container.removeComponent(jobClass);
+//            }
+//        };
     }
 
     private static class ThreadLocalAdapter<T> extends AbstractAdapter<T>

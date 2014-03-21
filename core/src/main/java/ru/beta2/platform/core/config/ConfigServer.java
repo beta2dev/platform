@@ -101,7 +101,11 @@ public class ConfigServer implements ConfigService, Startable
     {
         log.debug("Load config: {}", name);
         DBObject o = configCollection.findOne(new BasicDBObject("name", name));
-        return new ConfigImpl(name, o == null ? "" : o.get("value").toString());
+        String configValue = null;
+        if (o != null && o.get("value") != null) {
+            configValue = o.get("value").toString();
+        }
+        return new ConfigImpl(name, configValue);
     }
 
     private void storeConfigValue(String name, String value)

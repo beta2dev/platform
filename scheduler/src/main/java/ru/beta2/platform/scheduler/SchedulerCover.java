@@ -1,7 +1,5 @@
 package ru.beta2.platform.scheduler;
 
-import org.quartz.JobKey;
-
 import java.util.List;
 import java.util.Set;
 
@@ -15,12 +13,28 @@ public interface SchedulerCover
 
     List<String> getAvailableJobTypes();
 
-    Set<JobKey> getJobKeys();
+    Set<ObjectKey> getJobKeys();
 
-    JobDescriptor getJob(JobKey key);
+    JobDescriptor getJob(ObjectKey key);
 
     void addJob(JobDescriptor job);
 
-    void updateJob(JobKey key, JobDescriptor job);
+    void updateJob(ObjectKey key, JobDescriptor job);
+
+    List<TriggerInfo> getJobTriggers(ObjectKey jobKey);
+
+    void addTrigger(ObjectKey jobKey, TriggerDescriptor trigger);
+
+    void updateTrigger(ObjectKey triggerKey, TriggerDescriptor trigger);
+
+    TriggerDescriptor getTrigger(ObjectKey key);
+
+    void pauseTrigger(ObjectKey key);
+
+    void resumeTrigger(ObjectKey key);
+
+    void deleteTrigger(ObjectKey key);
+
+    // todo DEFFERED add pause/resume job
 
 }

@@ -9,6 +9,7 @@ import org.picocontainer.injectors.AbstractInjector;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.spi.JobFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.beta2.platform.core.util.LifecycleException;
@@ -40,7 +41,16 @@ public class QuartzSchedulerComponent extends AbstractAdapter<Scheduler> impleme
         }
 
         try {
-            return new StdSchedulerFactory(props).getScheduler();
+            log.trace("Get Scheduler from SchedulerFactory");
+            Scheduler scheduler =  new StdSchedulerFactory(props).getScheduler();
+
+            JobFactory jobFactory = container.getComponent(JobFactory.class);
+            if (jobFactory != null) {
+                log.trace("Assign JobFactory to Scheduler");
+                scheduler.setJobFactory(jobFactory);
+            }
+
+            return scheduler;
         }
         catch (SchedulerException e) {
             log.error("Error creating QuartzScheduler", e);

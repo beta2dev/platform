@@ -1,0 +1,6 @@
+<trigger xmlns:a="b2tplxml"
+         a:bind="$trigger"
+         a:properties="name,group,schedule,priority,misfireInstruction,startTime,endTime"
+        >
+    <description a:text="@description"/>
+</trigger>

@@ -1,0 +1,44 @@
+<resource xmlns:a="b2tplxml">
+
+    <data-model>
+        <object path="/trigger">
+            <properties>
+                <property name="group" title="Группа" type="string" path="\@group"/>
+                <property name="name" title="Имя" type="string" path="\@name"/>
+
+                <property name="schedule" title="Расписание" type="string" path="\@schedule"/>
+
+                <property name="misfireInstruction" title="Пропуск срабатывания" type="enum" path="\@misfireInstruction">
+                    <values>
+                        <value a:bindlist="$misfires" title="@it" a:text="@it.key"/>
+                    </values>
+                    <editor type="radio-group"/>
+                </property>
+
+                <property name="priority" title="Приоритет" type="int" path="\@priority"/>
+
+                <property name="startTime" title="Начало работы" type="datetime" path="\@startTime"/>
+                <property name="endTime" title="Окончание работы" type="datetime" path="\@endTime"/>
+
+                <property name="description" title="Описание" type="string" path="description/text()">
+                    <editor type="text" rows="5"/>
+                </property>
+            </properties>
+        </object>
+    </data-model>
+
+    <operations>
+        <get format="xml"/>
+        <post name="create" format="json" uri="../.."/>
+        <put name="update" format="json"/>
+    </operations>
+
+    <actions>
+        <save/>
+
+        <separator/>
+
+        <cancel/>
+    </actions>
+
+</resource>

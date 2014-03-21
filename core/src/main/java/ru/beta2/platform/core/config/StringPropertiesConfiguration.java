@@ -15,6 +15,8 @@ public class StringPropertiesConfiguration extends PropertiesConfiguration
     public StringPropertiesConfiguration(String configValue) throws ConfigurationException
     {
         setThrowExceptionOnMissing(true);
-        load(new StringReader(configValue));
+        if (configValue != null) {
+            load(new StringReader(configValue));
+        }
     }
 }

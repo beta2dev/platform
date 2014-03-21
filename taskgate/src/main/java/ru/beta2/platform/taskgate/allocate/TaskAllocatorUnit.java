@@ -7,6 +7,8 @@ import ru.beta2.platform.core.assembly.AssemblyUnit;
 import ru.beta2.platform.core.assembly.PicoContainerFactory;
 import ru.beta2.platform.core.config.ConfigService;
 
+import static org.picocontainer.Characteristics.CACHE;
+
 /**
  * User: Inc
  * Date: 09.03.14
@@ -38,6 +40,8 @@ public class TaskAllocatorUnit extends AssemblyUnit
         }
 
         pico.addComponent(cfg);
-
+        pico.as(CACHE).addComponent(TaskJobFactory.class);
     }
+
+
 }

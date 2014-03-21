@@ -1,6 +1,5 @@
 package ru.beta2.platform.scheduler;
 
-import org.picocontainer.Characteristics;
 import ru.beta2.platform.core.assembly.Module;
 import ru.beta2.platform.core.assembly.ModuleContext;
 

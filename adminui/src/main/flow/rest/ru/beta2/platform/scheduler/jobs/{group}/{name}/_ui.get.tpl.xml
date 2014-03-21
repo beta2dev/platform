@@ -1,13 +1,16 @@
-<resource>
+<resource xmlns:a="b2tplxml">
 
     <data-model>
         <object path="/job">
             <properties>
-                <property name="group" title="Группа" type="string" path="@group"/>
-                <property name="name" title="Имя" type="string" path="@name"/>
+                <property name="group" title="Группа" type="string" path="\@group"/>
+                <property name="name" title="Имя" type="string" path="\@name"/>
 
-                <!-- todo !!! implement radiogroup or dropdownlist -->
-                <property name="type" title="Тип" type="string" path="@type"/>
+                <property name="type" title="Тип" type="enum" path="\@type">
+                    <values>
+                        <value a:bindlist="$jobTypes" title="@title" a:text="@type"/>
+                    </values>
+                </property>
 
                 <property name="data" title="Параметры" type="string" path="data/text()">
                     <editor type="text" rows="20"/>
@@ -22,7 +25,7 @@
 
     <operations>
         <get format="xml"/>
-        <put name="create" format="json"/>
+        <post name="create" format="json" uri="../.."/>
         <put name="update" format="json"/>
     </operations>
 

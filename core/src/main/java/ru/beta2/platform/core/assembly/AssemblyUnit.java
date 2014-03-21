@@ -72,7 +72,7 @@ public abstract class AssemblyUnit implements Startable
 
     protected String getConfigValue()
     {
-        return config.getValue();
+        return config.getValue() != null ? config.getValue() : "";
     }
 
     protected Configuration createConfiguration()

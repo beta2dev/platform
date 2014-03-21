@@ -1,0 +1,56 @@
+<resource>
+
+    <data-model>
+        <list path="/job/triggers/trigger">
+            <columns>
+                <column title="Группа" path="@group"/>
+                <column title="Имя" path="@name"/>
+
+                <column title="priority" path="@priority"/>
+                <column title="misfire" path="misfire-instruction/@title"/>
+
+                <!--private String description;-->
+
+                <column title="startTime" path="@startTime"/>
+                <column title="endTime" path="@endTime"/>
+                <column title="nextFireTime" path="@nextFireTime"/>
+                <column title="previousFireTime" path="@previousFireTime"/>
+                <column title="finalFireTime" path="@finalFireTime"/>
+                <column title="state" path="@state"/>
+
+                <column meta="uri" visible="false" path="@uri"/>
+            </columns>
+        </list>
+    </data-model>
+
+    <operations>
+        <get format="xml"/>
+        <post name="trigger-op"/>
+    </operations>
+
+    <actions>
+        <close/>
+        <separator/>
+        <refresh/>
+        <separator/>
+
+        <create uri="GROUP/NAME"/>
+        <edit id="edit" selection="list"/>
+
+        <separator/>
+
+        <update title="На паузу" op="trigger-op" selection="list" uri-path="pause/@uri"/>
+        <update title="Возобновить" op="trigger-op" selection="list" uri-path="resume/@uri"/>
+
+        <separator/>
+
+        <update title="Удалить" op="trigger-op" selection="list" uri-path="delete/@uri"/>
+
+    </actions>
+
+    <actions name="item-inplace">
+        <action ref="edit" title="edit"/>
+        <!--<action ref="view-triggers" title="trgs"/>-->
+    </actions>
+
+</resource>
