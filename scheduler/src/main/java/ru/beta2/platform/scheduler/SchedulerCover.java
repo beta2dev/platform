@@ -37,4 +37,12 @@ public interface SchedulerCover
 
     // todo DEFFERED add pause/resume job
 
+    /**
+     *
+     * @param jobKey optional
+     * @param limit optional
+     * @return log in descending order (most recent return first)
+     */
+    List<JobExecutionInfo> getJobExecutionLog(ObjectKey jobKey, Integer limit);
+
 }

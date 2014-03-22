@@ -25,11 +25,17 @@
         <edit id="edit" selection="list"/>
         <view id="view-triggers" selection="list" title="Триггеры" uri-path="triggers/@uri"/>
 
+        <separator/>
+
+        <view title="Общий лог" uri="log"/>
+        <view id="view-job-log" selection="list" title="Job-лог" uri-path="log/@uri"/>
+
     </actions>
 
     <actions name="item-inplace">
         <action ref="edit" title="edit"/>
         <action ref="view-triggers" title="trgs"/>
+        <action ref="view-job-log" title="log"/>
     </actions>
 
 </resource>

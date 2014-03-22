@@ -1,5 +1,6 @@
 package ru.beta2.platform.scheduler;
 
+import org.apache.commons.lang.IllegalClassException;
 import org.apache.commons.lang.StringUtils;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
@@ -67,7 +68,7 @@ public class JobDescriptor extends ObjectDescriptor implements Serializable
                 '}';
     }
 
-    public JobDetail toJobDetail() throws ClassNotFoundException
+    public JobDetail toJobDetail() throws ClassNotFoundException, IllegalClassException
     {
         JobBuilder b = JobBuilder
                 .newJob(getJobClass(this.getType()))
@@ -81,9 +82,13 @@ public class JobDescriptor extends ObjectDescriptor implements Serializable
         return b.build();
     }
 
-    private Class<? extends Job> getJobClass(String type) throws ClassNotFoundException
+    private Class<? extends Job> getJobClass(String type) throws ClassNotFoundException, IllegalClassException
     {
-        return (Class<? extends Job>) Class.forName(type); // todo DEFFERED ??? maybe check for class is job child
+        Class cl = Class.forName(type);
+        if (!Job.class.isAssignableFrom(cl)) {
+            throw new IllegalClassException(Job.class, cl);
+        }
+        return cl;
     }
 
 }

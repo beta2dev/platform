@@ -25,6 +25,7 @@ class covers
             $options->typeMap['scheduler\JobDescriptor'] = 'ru.beta2.platform.scheduler.JobDescriptor';
             $options->typeMap['scheduler\TriggerDescritpr'] = 'ru.beta2.platform.scheduler.TriggerDescriptor';
             $options->typeMap['scheduler\TriggerInfo'] = 'ru.beta2.platform.scheduler.TriggerInfo';
+            $options->typeMap['scheduler\JobExecutionInfo'] = 'ru.beta2.platform.scheduler.JobExecutionInfo';
 //            $options->before = function($ctx) {var_dump($ctx->payload);};
 //            $options->after = function($ctx) {var_dump($ctx->payload);};
             $scheduler = self::createCoverProxy('scheduler', $options);

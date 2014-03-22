@@ -139,16 +139,6 @@ public class PlatformJobFactory implements JobFactory, JobRegistry
                 return "JobFactoryAdapter";
             }
         });
-        // todo !!! remove after testing
-//        container.addComponent(jobClass, jobFactory);
-//        return new HandlerRegistration()
-//        {
-//            @Override
-//            public void removeHandler()
-//            {
-//                container.removeComponent(jobClass);
-//            }
-//        };
     }
 
     private static class ThreadLocalAdapter<T> extends AbstractAdapter<T>

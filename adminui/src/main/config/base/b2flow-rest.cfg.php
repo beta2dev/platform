@@ -10,6 +10,8 @@ return [
         '/ru/beta2/platform/core/config/{name}/_ui',
         '/ru/beta2/platform/scheduler/jobs/{group}/{name}',
         '/ru/beta2/platform/scheduler/jobs/{group}/{name}/_ui',
+        '/ru/beta2/platform/scheduler/jobs/{group}/{name}/log',
+        '/ru/beta2/platform/scheduler/jobs/{group}/{name}/log/_ui',
         '/ru/beta2/platform/scheduler/jobs/{group}/{name}/triggers',
         '/ru/beta2/platform/scheduler/jobs/{group}/{name}/triggers/_ui',
         '/ru/beta2/platform/scheduler/jobs/{group}/{name}/triggers/{trgroup}/{trname}',

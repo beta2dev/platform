@@ -9,7 +9,7 @@ class scheduler
 
     static $MISFIRE_MAP = [];
 
-    // todo !!! implement delete jobs
+    // todo DEFFERED implement delete jobs
     // todo !!! implement view trigger log for job
 
     static function createJobDescriptorFromInput()

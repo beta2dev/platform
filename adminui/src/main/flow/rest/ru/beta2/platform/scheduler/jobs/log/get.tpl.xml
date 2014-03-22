@@ -1,0 +1,8 @@
+<log>
+    <execution xmlns:a="b2tplxml" a:bindlist="$executions"
+               a:properties="fireTime,scheduledFireTime,jobRunTime,refireCount,fireInstanceId">
+        <job name="@jobKey.name" group="@jobKey.group"/>
+        <trigger name="@triggerKey.name" group="@triggerKey.group"/>
+        <exception message="@exception" a:output="@exception"/>
+    </execution>
+</log>

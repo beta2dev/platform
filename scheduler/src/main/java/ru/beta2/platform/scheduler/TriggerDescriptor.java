@@ -4,6 +4,7 @@ import org.quartz.*;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * User: inc
@@ -80,7 +81,7 @@ public class TriggerDescriptor extends ObjectDescriptor implements Serializable
         this.schedule = schedule;
     }
 
-    public Trigger toTrigger(JobKey forJob)
+    public Trigger toTrigger(JobKey forJob, TimeZone tz)
     {
         TriggerBuilder<Trigger> b = TriggerBuilder.newTrigger()
                 .withIdentity(getNameSafe(), getGroupSafe())
@@ -96,7 +97,9 @@ public class TriggerDescriptor extends ObjectDescriptor implements Serializable
         }
 
         CronScheduleBuilder sb = CronScheduleBuilder.cronSchedule(schedule);
-//                .inTimeZone() todo !!! ??? check what about timezone
+        if (tz != null) {
+            sb.inTimeZone(tz);
+        }
         switch (misfireInstruction) {
             case CronTrigger.MISFIRE_INSTRUCTION_DO_NOTHING:
                 sb.withMisfireHandlingInstructionDoNothing();

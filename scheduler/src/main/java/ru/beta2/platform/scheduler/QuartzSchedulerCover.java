@@ -1,5 +1,6 @@
 package ru.beta2.platform.scheduler;
 
+import org.apache.commons.lang.IllegalClassException;
 import org.picocontainer.Startable;
 import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
@@ -23,17 +24,22 @@ public class QuartzSchedulerCover implements SchedulerCover, Startable
 
     private final Logger log = LoggerFactory.getLogger(QuartzSchedulerCover.class);
 
+    private final SchedulerConfig cfg;
     private final UndercoverService undercoverService;
     private final Scheduler scheduler;
     private final PlatformJobFactory jobFactory;
+    private final JobExecutionMonitor monitor;
 
     private HandlerRegistration undercoverRegistration;
 
-    public QuartzSchedulerCover(UndercoverService undercoverService, Scheduler scheduler, PlatformJobFactory jobFactory)
+    public QuartzSchedulerCover(SchedulerConfig cfg, UndercoverService undercoverService, Scheduler scheduler,
+                                PlatformJobFactory jobFactory, JobExecutionMonitor monitor)
     {
+        this.cfg = cfg;
         this.undercoverService = undercoverService;
         this.scheduler = scheduler;
         this.jobFactory = jobFactory;
+        this.monitor = monitor;
     }
 
     @Override
@@ -108,6 +114,10 @@ public class QuartzSchedulerCover implements SchedulerCover, Startable
             log.error("Class not found for job", e);
             throw new SchedulerManageException("Class not found for job", e);
         }
+        catch (IllegalClassException e) {
+            log.error("Class is not job", e);
+            throw new SchedulerManageException("Class is not job", e);
+        }
     }
 
     @Override
@@ -126,6 +136,10 @@ public class QuartzSchedulerCover implements SchedulerCover, Startable
             log.error("Class not found for job", e);
             throw new SchedulerManageException("Class not found for job", e);
         }
+        catch (IllegalClassException e) {
+            log.error("Class is not job", e);
+            throw new SchedulerManageException("Class is not job", e);
+        }
 
         if (oldKey.equals(newKey)) {
             log.trace("Replace job with same key");
@@ -140,12 +154,23 @@ public class QuartzSchedulerCover implements SchedulerCover, Startable
         else {
             log.trace("Replace job with different key");
 
-            // todo !!! implement save/copy triggers
             try {
+                List<? extends Trigger> triggers = scheduler.getTriggersOfJob(oldKey);
+
                 boolean deleteResult = scheduler.deleteJob(oldKey);
                 log.debug("Job delete result: jobKey={}, deleteResult={}", oldKey, deleteResult);
 
+                log.trace("Add job");
                 scheduler.addJob(jobDetail, false);
+
+                if (triggers != null && !triggers.isEmpty()) {
+                    log.debug("Copy triggers for job: {}", triggers);
+                    // чтобы это сработало, нужно все равно триггеры переделать на новый jobKey
+//                    scheduler.scheduleJob(jobDetail, new HashSet<Trigger>(triggers), false);
+                    for (Trigger tr : triggers) {
+                        scheduler.scheduleJob(tr.getTriggerBuilder().forJob(newKey).build());
+                    }
+                }
             }
             catch (SchedulerException e) {
                 log.error("Error replace job with different key", e);
@@ -179,7 +204,7 @@ public class QuartzSchedulerCover implements SchedulerCover, Startable
     {
         log.debug("Add trigger: jobKey={}, trigger={}", jobKey, trigger);
         try {
-            scheduler.scheduleJob(trigger.toTrigger(jobKey(jobKey)));
+            scheduler.scheduleJob(trigger.toTrigger(jobKey(jobKey), cfg.getDefaultTriggerTimeZone()));
         }
         catch (SchedulerException e) {
             log.error("Error add trigger", e);
@@ -195,7 +220,7 @@ public class QuartzSchedulerCover implements SchedulerCover, Startable
             TriggerKey oldkey = triggerKey(triggerKey);
             Trigger oldtr = scheduler.getTrigger(oldkey);
             Trigger.TriggerState oldstate = scheduler.getTriggerState(oldkey);
-            Trigger newtr = trigger.toTrigger(oldtr.getJobKey());
+            Trigger newtr = trigger.toTrigger(oldtr.getJobKey(), cfg.getDefaultTriggerTimeZone());
             scheduler.rescheduleJob(oldkey, newtr);
             if (Trigger.TriggerState.PAUSED.equals(oldstate)) {
                 log.trace("Pause rescheduled trigger");
@@ -259,6 +284,12 @@ public class QuartzSchedulerCover implements SchedulerCover, Startable
             log.error("Error delete trigger", e);
             throw new SchedulerManageException("Error delete trigger", e);
         }
+    }
+
+    @Override
+    public List<JobExecutionInfo> getJobExecutionLog(ObjectKey jobKey, Integer limit)
+    {
+        return monitor.getJobExecutions(jobKey, limit);
     }
 
     private JobKey jobKey(ObjectKey key)

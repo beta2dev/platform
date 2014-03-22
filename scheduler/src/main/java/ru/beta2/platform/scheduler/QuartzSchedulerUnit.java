@@ -33,9 +33,15 @@ public class QuartzSchedulerUnit extends AssemblyUnit
     @Override
     protected void populatePico(MutablePicoContainer pico) throws Exception
     {
+        SchedulerConfig cfg = new SchedulerConfig(createConfiguration().subset("scheduler"));
+
         pico.addComponent(createConfigProperties());
+        pico.addComponent(cfg);
         pico.as(CACHE).addAdapter(new QuartzSchedulerComponent());
         pico.as(CACHE).addComponent(QuartzSchedulerCover.class);
+
+        pico.addComponent(cfg.getJobExecutionMonitorConfig());
+        pico.as(CACHE).addComponent(JobExecutionMonitor.class);
     }
 
     private Properties createConfigProperties() throws IOException

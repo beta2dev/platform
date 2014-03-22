@@ -1,0 +1,33 @@
+<resource>
+
+    <data-model>
+        <list path="/log/execution">
+            <columns>
+                <column title="job.group" path="job/@group"/>
+                <column title="job.name" path="job/@name"/>
+                <column title="trg.group" path="trigger/@group"/>
+                <column title="trg.name" path="trigger/@name"/>
+
+                <column title="fireTime" path="@fireTime"/>
+                <column title="scheduledFireTime" path="@scheduledFireTime"/>
+                <column title="jobRunTime" path="@jobRunTime"/>
+                <column title="refireCount" path="@refireCount"/>
+
+                <column title="fireInstanceId" path="@fireInstanceId"/>
+                <column title="exception" path="exception/@message"/>
+
+            </columns>
+        </list>
+    </data-model>
+
+    <operations>
+        <get format="xml"/>
+    </operations>
+
+    <actions>
+        <close/>
+        <separator/>
+        <refresh/>
+    </actions>
+
+</resource>
