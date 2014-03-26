@@ -11,6 +11,8 @@ import ru.beta2.platform.core.assembly.AssemblyUnit;
 import ru.beta2.platform.core.assembly.PicoContainerFactory;
 import ru.beta2.platform.core.config.ConfigService;
 
+import java.util.concurrent.Executor;
+
 import static org.picocontainer.Characteristics.CACHE;
 
 /**
@@ -21,9 +23,9 @@ import static org.picocontainer.Characteristics.CACHE;
 public class HornetQServerUnit extends AssemblyUnit
 {
 
-    public HornetQServerUnit(PicoContainerFactory containerFactory, ConfigService configService)
+    public HornetQServerUnit(PicoContainerFactory containerFactory, ConfigService configService, Executor assemblyExecutor)
     {
-        super(containerFactory, configService);
+        super(containerFactory, configService, assemblyExecutor);
     }
 
     @Override
@@ -51,7 +53,7 @@ public class HornetQServerUnit extends AssemblyUnit
             return cfg;
         }
 
-        log.trace("Parse XML configuration");
+        log.debug("Parse XML configuration: \n{}", xml);
         Element e = XMLUtil.stringToElement(XMLUtil.replaceSystemProps(xml));
 
         FileConfigurationParser parser = new FileConfigurationParser();

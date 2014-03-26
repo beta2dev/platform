@@ -21,20 +21,24 @@ public class TaskJobFactory implements JobFactory, Startable
 
     private final Logger log = LoggerFactory.getLogger(TaskJobFactory.class);
 
+    private final AllocatorConfig cfg;
     private final JobRegistry jobRegistry;
+    private final MessageProducer messageProducer;
 
     private HandlerRegistration jobFactoryRegistration;
 
-    public TaskJobFactory(JobRegistry jobRegistry)
+    public TaskJobFactory(AllocatorConfig cfg, JobRegistry jobRegistry, MessageProducer messageProducer)
     {
+        this.cfg = cfg;
         this.jobRegistry = jobRegistry;
+        this.messageProducer = messageProducer;
     }
 
     @Override
     public Job newJob(TriggerFiredBundle triggerFiredBundle, Scheduler scheduler) throws SchedulerException
     {
-        // todo !!! implement
-        return new TaskJob(null, null);
+        log.trace("Create new job {}", triggerFiredBundle.getJobDetail().getKey());
+        return new TaskJob(cfg, messageProducer);
     }
 
     @Override

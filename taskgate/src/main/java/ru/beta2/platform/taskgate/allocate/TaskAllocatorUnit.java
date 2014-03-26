@@ -7,6 +7,8 @@ import ru.beta2.platform.core.assembly.AssemblyUnit;
 import ru.beta2.platform.core.assembly.PicoContainerFactory;
 import ru.beta2.platform.core.config.ConfigService;
 
+import java.util.concurrent.Executor;
+
 import static org.picocontainer.Characteristics.CACHE;
 
 /**
@@ -19,9 +21,9 @@ public class TaskAllocatorUnit extends AssemblyUnit
 
     private final Logger log = LoggerFactory.getLogger(TaskAllocatorUnit.class);
 
-    public TaskAllocatorUnit(PicoContainerFactory containerFactory, ConfigService configService)
+    public TaskAllocatorUnit(PicoContainerFactory containerFactory, ConfigService configService, Executor assemblyExecutor)
     {
-        super(containerFactory, configService);
+        super(containerFactory, configService, assemblyExecutor);
     }
 
     @Override
@@ -41,6 +43,7 @@ public class TaskAllocatorUnit extends AssemblyUnit
 
         pico.addComponent(cfg);
         pico.as(CACHE).addComponent(TaskJobFactory.class);
+        pico.as(CACHE).addComponent(MessageProducer.class, SingleSessionMessageProducer.class);
     }
 
 

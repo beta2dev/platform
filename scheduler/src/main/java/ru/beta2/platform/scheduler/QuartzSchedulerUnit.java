@@ -8,6 +8,7 @@ import ru.beta2.platform.core.config.ConfigService;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 import static org.picocontainer.Characteristics.CACHE;
 
@@ -19,9 +20,9 @@ import static org.picocontainer.Characteristics.CACHE;
 public class QuartzSchedulerUnit extends AssemblyUnit
 {
 
-    public QuartzSchedulerUnit(PicoContainerFactory containerFactory, ConfigService configService)
+    public QuartzSchedulerUnit(PicoContainerFactory containerFactory, ConfigService configService, Executor assemblyExecutor)
     {
-        super(containerFactory, configService);
+        super(containerFactory, configService, assemblyExecutor);
     }
 
     @Override

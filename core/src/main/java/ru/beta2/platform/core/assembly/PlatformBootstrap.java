@@ -15,8 +15,16 @@ import ru.beta2.platform.core.mongo.MongoConnectionConfig;
 import ru.beta2.platform.core.undercover.UndercoverConfig;
 import ru.beta2.platform.core.undercover.UndercoverServer;
 
+import javax.management.MBeanServer;
+import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayDeque;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import static org.picocontainer.Characteristics.CACHE;
 
@@ -27,6 +35,9 @@ import static org.picocontainer.Characteristics.CACHE;
  */
 public class PlatformBootstrap
 {
+
+    // todo DEFFERED реализовать независимое от ошибок pico ComponentMonitor (да и вообще управление запуском/перезапуском)
+    // (то есть нужно бы сделать, чтобы ошибка при старте модуля/юнита не приводила к остановке старта сервера)
 
     private final static String PLATFORM_CONFIG_URL = "/platform.properties";
 
@@ -46,8 +57,10 @@ public class PlatformBootstrap
     void run()
     {
         long startAt = System.currentTimeMillis();
-        log.info("Begin bootstrap");
+        log.info("Begin bootstrap, run as {}", ManagementFactory.getRuntimeMXBean().getName());
+
         Runtime.getRuntime().addShutdownHook(new Shutdown());
+        BootstrapExecutor executor = new BootstrapExecutor();
         try {
             Configuration cfg = getPlatformConfiguration();
 
@@ -68,6 +81,9 @@ public class PlatformBootstrap
             rootContainer.addComponent(new ApplicationConfig(cfg.subset("app")));
             rootContainer.as(CACHE).addComponent(ApplicationUnit.class);
 
+            // Executor
+            rootContainer.addComponent(executor);
+
             // Start
             log.info("Starting root container");
             rootContainer.start();
@@ -83,6 +99,8 @@ public class PlatformBootstrap
         }
         long elapsed = System.currentTimeMillis() - startAt;
         log.info("*** SERVER IS STARTED in " + elapsed + " ms ***");
+
+        executor.runExecutionCycle();
     }
 
     //
@@ -114,6 +132,38 @@ public class PlatformBootstrap
             rootContainer.dispose();
             log.info("Shutdown done");
         }
+    }
+
+    private class BootstrapExecutor implements Executor
+    {
+
+        private final BlockingQueue<Runnable> commands = new LinkedBlockingQueue<Runnable>();
+
+        @Override
+        public void execute(Runnable command)
+        {
+            log.trace("Offer command to queue");
+            commands.offer(command);
+        }
+
+        public void runExecutionCycle()
+        {
+            log.trace("Enter execution cycle");
+            while (true) {
+                try {
+                    log.trace("Take next command");
+                    Runnable r = commands.take();
+                    log.trace("Run command");
+                    r.run();
+                }
+                catch (InterruptedException e) {
+                    log.trace("Interrupted");
+                    break;
+                }
+            }
+            log.trace("Leave execution cycle");
+        }
+
     }
 
 }

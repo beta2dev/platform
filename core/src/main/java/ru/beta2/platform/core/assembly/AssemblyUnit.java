@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import ru.beta2.platform.core.config.*;
 import ru.beta2.platform.core.util.HandlerRegistration;
 
+import java.util.concurrent.Executor;
+
 /**
  * User: Inc
  * Date: 20.02.14
@@ -23,16 +25,18 @@ public abstract class AssemblyUnit implements Startable
 
     private final PicoContainerFactory containerFactory;
     private final ConfigService configService;
+    private final Executor assemblyExecutor;
 
     private Config config;
     private HandlerRegistration configListenerRegistration;
 
     private MutablePicoContainer pico;
 
-    public AssemblyUnit(PicoContainerFactory containerFactory, ConfigService configService)
+    public AssemblyUnit(PicoContainerFactory containerFactory, ConfigService configService, Executor assemblyExecutor)
     {
         this.containerFactory = containerFactory;
         this.configService = configService;
+        this.assemblyExecutor = assemblyExecutor;
     }
 
     @Override
@@ -126,20 +130,26 @@ public abstract class AssemblyUnit implements Startable
         pico = null;
     }
 
-    private class ConfigHandler implements ConfigListener
+    private class ConfigHandler implements ConfigListener, Runnable
     {
         @Override
         public void onConfigChange(Config config)
         {
             synchronized (AssemblyUnit.this) {
-                String assemblyName = getAssemblyName();
-
-                log.info("Restarting assembly unit: {}", assemblyName);
-                stopAndDisposePico();
-                log.trace("Assembly unit ready to restart: {}", assemblyName);
-                createAndStartPico();
-                log.info("Assembly unit restarted: {}", assemblyName);
+                log.trace("Execute assembly restarting: {}", getAssemblyName());
+                assemblyExecutor.execute(this);
             }
+        }
+
+        @Override
+        public void run()
+        {
+            final String assemblyName = getAssemblyName();
+            log.info("Restarting assembly unit: {}", assemblyName);
+            stopAndDisposePico();
+            log.trace("Assembly unit ready to restart: {}", assemblyName);
+            createAndStartPico();
+            log.info("Assembly unit restarted: {}", assemblyName);
         }
     }
 }

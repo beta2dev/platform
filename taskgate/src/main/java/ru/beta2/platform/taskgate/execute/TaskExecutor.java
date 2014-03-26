@@ -3,24 +3,25 @@ package ru.beta2.platform.taskgate.execute;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
-import org.apache.http.message.BasicNameValuePair;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.picocontainer.Startable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.beta2.platform.core.util.LifecycleException;
+import ru.beta2.platform.hornetq.util.SingleSessionHelper;
+import ru.beta2.platform.taskgate.task.ClientMessageTaskAdapter;
+import ru.beta2.platform.taskgate.task.TaskDescriptor;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,17 +35,14 @@ public class TaskExecutor implements Startable
     private final Logger log = LoggerFactory.getLogger(TaskExecutor.class);
 
     private final ExecutorConfig cfg;
-    private final ServerLocator serverLocator;
-
-    private ClientSessionFactory sessionFactory;
-    private ClientSession session;
+    private final SingleSessionHelper sessionHelper;
 
     private List<TargetHandler> handlers = new ArrayList<TargetHandler>();
 
     public TaskExecutor(ExecutorConfig cfg, ServerLocator serverLocator)
     {
         this.cfg = cfg;
-        this.serverLocator = serverLocator;
+        this.sessionHelper = new SingleSessionHelper(log, serverLocator);
     }
 
     @Override
@@ -52,23 +50,7 @@ public class TaskExecutor implements Startable
     {
         log.trace("Starting TaskExecutor");
 
-        try {
-            log.trace("Create HornetQ session factory");
-            sessionFactory = serverLocator.createSessionFactory();
-        }
-        catch (Exception e) {
-            log.error("Error create HornetQ session factory", e);
-            throw new LifecycleException("Error create HornetQ session factory", e);
-        }
-
-        try {
-            log.trace("Create HornetQ session");
-            session = sessionFactory.createSession();
-        }
-        catch (HornetQException e) {
-            log.error("Error create HornetQ session", e);
-            throw new LifecycleException("Error create HornetQ session", e);
-        }
+        sessionHelper.create();
 
         try {
             activeTasksTargets();
@@ -78,14 +60,7 @@ public class TaskExecutor implements Startable
             throw new LifecycleException("Error activate tasks targets", e);
         }
 
-        try {
-            log.trace("Start HornetQ session");
-            session.start();
-        }
-        catch (HornetQException e) {
-            log.error("Error start HornetQ session", e);
-            throw new LifecycleException("Error start HornetQ session", e);
-        }
+        sessionHelper.start();
 
         log.info("TaskExecutor started");
     }
@@ -106,23 +81,7 @@ public class TaskExecutor implements Startable
         }
         handlers.clear();
 
-        try {
-            if (session != null) {
-                log.trace("Stop and close HornetQ session");
-                session.stop();
-                session.close();
-                session = null;
-            }
-            if (sessionFactory != null) {
-                log.trace("Close HornetQ session factory");
-                sessionFactory.close();
-                sessionFactory = null;
-            }
-        }
-        catch (HornetQException e) {
-            log.error("Error close HornetQ resource", e);
-            throw new LifecycleException("Error close HornetQ resource", e);
-        }
+        sessionHelper.stopAndClose();
 
         log.info("TaskExecutor stopped");
     }
@@ -152,7 +111,7 @@ public class TaskExecutor implements Startable
         TargetHandler(TargetConfig cfg) throws HornetQException
         {
             this.cfg = cfg;
-            consumer = session.createConsumer(cfg.getQueue());
+            consumer = sessionHelper.getSession().createConsumer(cfg.getQueue());
             consumer.setMessageHandler(this);
         }
 
@@ -190,8 +149,8 @@ public class TaskExecutor implements Startable
                     message.acknowledge();
                 }
                 catch (HornetQException e) {
-                    log.error("Error acknoledge message", e);
-//                    throw new TaskExecuteException("Error acknoledge message", e);
+                    log.error("Error acknowledge message", e);
+//                    throw new TaskExecuteException("Error acknowledge message", e);
                 }
             }
         }
@@ -202,7 +161,7 @@ public class TaskExecutor implements Startable
             return "TargetHandler{name=" + cfg.getName() + ",queue" + cfg.getQueue() + '}';
         }
 
-        private String getTaskResourceURL(TaskDescriptor task)
+        private String getTaskResourceURL(ExecuteTaskDescriptor task)
         {
             String base = cfg.getTaskBaseURL().trim();
             return base + (base.endsWith("/") ? "" : "/") + task.getTaskURLPath();
@@ -211,7 +170,7 @@ public class TaskExecutor implements Startable
         private HttpResponse executeHttpRequest(ClientMessage message) throws IOException, HornetQException
         {
             log.trace("Prepare HTTP request");
-            TaskDescriptor t = new TaskDescriptor(message);
+            ExecuteTaskDescriptor t = new ExecuteTaskDescriptor(message);
 
             Request req = Request.Post(getTaskResourceURL(t))
                     .connectTimeout(cfg.getConnectTimeout())
@@ -233,9 +192,9 @@ public class TaskExecutor implements Startable
                     req.bodyStream(pis);
                 }
             }
-            else if (t.hasTaskParameters()) {
+            else if (t.hasParameters()) {
                 log.trace("There is task parameters");
-                req.bodyForm(t.getTaskParameters());
+                req.bodyForm(t.getParameters());
             }
 
             log.trace("Execute HTTP request");
@@ -265,33 +224,29 @@ public class TaskExecutor implements Startable
     }
 }
 
-class TaskDescriptor
+class ExecuteTaskDescriptor extends TaskDescriptor
 {
-
-    private static final SimpleString PARAM_PREFIX = SimpleString.toSimpleString("param.");
-    private static final int PARAM_PREFIX_LENGTH = PARAM_PREFIX.length();
 
     private final ClientMessage msg;
 
-    private Collection<NameValuePair> parameters;
-
-    TaskDescriptor(ClientMessage msg)
+    ExecuteTaskDescriptor(ClientMessage msg)
     {
+        super(new ClientMessageTaskAdapter(msg));
         this.msg = msg;
     }
 
     String getTaskURLPath()
     {
         String url;
-        String id = msg.getStringProperty("task.id");
+        String id = getTaskId();
         if (id != null) {
             url = "id/" + id;
         }
         else {
-            url = msg.getStringProperty("task.class");
+            url = getTaskClass();
         }
 
-        String m = msg.getStringProperty("task.method");
+        String m = getTaskMethod();
         return url + (m != null ? "/" + m : "");
     }
 
@@ -302,33 +257,10 @@ class TaskDescriptor
 
     ContentType getBodyContentType()
     {
-        String ct = msg.getStringProperty("task.mimeType");
+        String ct = getBodyMimeType();
         if (ct != null) {
-            return ContentType.create(ct, msg.getStringProperty("task.charset"));
+            return ContentType.create(ct, getBodyCharset());
         }
         return null;
-    }
-
-    boolean hasTaskParameters()
-    {
-        return !getTaskParameters().isEmpty();
-    }
-
-    Collection<NameValuePair> getTaskParameters()
-    {
-        if (parameters == null) {
-            for (SimpleString p : msg.getPropertyNames()) {
-                if (p.startsWith(PARAM_PREFIX)) {
-                    if (parameters == null) {
-                        parameters = new ArrayList<NameValuePair>();
-                    }
-                    parameters.add(new BasicNameValuePair(p.subSequence(PARAM_PREFIX_LENGTH, p.length()).toString(), msg.getStringProperty(p)));
-                }
-            }
-            if (parameters == null) {
-                parameters = Collections.emptyList();
-            }
-        }
-        return parameters;
     }
 }

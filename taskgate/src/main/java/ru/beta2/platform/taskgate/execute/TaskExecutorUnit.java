@@ -5,6 +5,8 @@ import ru.beta2.platform.core.assembly.AssemblyUnit;
 import ru.beta2.platform.core.assembly.PicoContainerFactory;
 import ru.beta2.platform.core.config.ConfigService;
 
+import java.util.concurrent.Executor;
+
 import static org.picocontainer.Characteristics.CACHE;
 
 /**
@@ -14,9 +16,9 @@ import static org.picocontainer.Characteristics.CACHE;
  */
 public class TaskExecutorUnit extends AssemblyUnit
 {
-    public TaskExecutorUnit(PicoContainerFactory containerFactory, ConfigService configService)
+    public TaskExecutorUnit(PicoContainerFactory containerFactory, ConfigService configService, Executor assemblyExecutor)
     {
-        super(containerFactory, configService);
+        super(containerFactory, configService, assemblyExecutor);
     }
 
     @Override

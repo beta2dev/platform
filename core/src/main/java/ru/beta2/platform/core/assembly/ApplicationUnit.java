@@ -6,6 +6,7 @@ import ru.beta2.platform.core.config.ConfigService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * User: Inc
@@ -17,9 +18,9 @@ public class ApplicationUnit extends AssemblyUnit
 
     private final ApplicationConfig cfg;
 
-    public ApplicationUnit(PicoContainerFactory containerFactory, ConfigService configService, ApplicationConfig cfg)
+    public ApplicationUnit(PicoContainerFactory containerFactory, ConfigService configService, ApplicationConfig cfg, Executor assemblyExecutor)
     {
-        super(containerFactory, configService);
+        super(containerFactory, configService, assemblyExecutor);
         this.cfg = cfg;
     }
 

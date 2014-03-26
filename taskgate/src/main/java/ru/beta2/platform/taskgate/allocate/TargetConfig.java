@@ -34,4 +34,13 @@ public class TargetConfig
         return cfg.getBoolean("default", false);
     }
 
+    @Override
+    public String toString()
+    {
+        return "TargetConfig{" +
+                "name=" + getName() +
+                ", address=" + getAddress() +
+                ", default=" + isDefault() +
+                '}';
+    }
 }
