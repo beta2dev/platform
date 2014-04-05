@@ -76,8 +76,7 @@ public class SingleSessionHelper
             }
         }
         catch (HornetQException e) {
-            log.error("Error close HornetQ resource", e);
-            throw new LifecycleException("Error close HornetQ resource", e);
+            log.warn("Error close HornetQ resource, ignore it", e);
         }
     }
 

@@ -1,6 +1,7 @@
 package ru.beta2.platform.scheduler;
 
 import org.apache.commons.configuration.Configuration;
+import ru.beta2.platform.core.mongo.MongoConstants;
 
 /**
  * User: inc
@@ -24,11 +25,11 @@ public class JobExecutionMonitorConfig
 
     public String getDbName()
     {
-        return cfg.getString("dbName");
+        return cfg.getString("dbName", MongoConstants.DEFAULT_DB_NAME);
     }
 
     public String getCollectionName()
     {
-        return cfg.getString("collectionName");
+        return cfg.getString("collectionName", "scheduler.joblog");
     }
 }

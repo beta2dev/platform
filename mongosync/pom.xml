@@ -9,25 +9,28 @@
     <version>DEV</version>
 
     <dependencies>
-
         <dependency>
-            <groupId>org.picocontainer</groupId>
-            <artifactId>picocontainer</artifactId>
-            <version>2.14.3</version>
+            <groupId>ru.beta2.platform</groupId>
+            <artifactId>beta2-platform-core</artifactId>
+            <version>DEV</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.6</version>
+            <groupId>ru.beta2.platform</groupId>
+            <artifactId>beta2-platform-hornetq</artifactId>
+            <version>DEV</version>
         </dependency>
-
 
         <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>2.11.4</version>
+            <groupId>org.jongo</groupId>
+            <artifactId>jongo</artifactId>
+            <version>1.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.0</version>
+        </dependency>
     </dependencies>
 
 </project>
