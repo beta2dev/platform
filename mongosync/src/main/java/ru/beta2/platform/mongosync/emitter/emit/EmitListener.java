@@ -1,4 +1,4 @@
-package ru.beta2.platform.mongosync.emitter;
+package ru.beta2.platform.mongosync.emitter.emit;
 
 import java.util.Set;
 
@@ -10,7 +10,7 @@ import java.util.Set;
 public interface EmitListener
 {
 
-    void onEmitStart(String address, Set<String> namespaces);
+    void onEmitStart(String address, Set<String> namespaces) throws EmitListenerException;
 
     void onEmitStop(String address, Set<String> namespaces);
 

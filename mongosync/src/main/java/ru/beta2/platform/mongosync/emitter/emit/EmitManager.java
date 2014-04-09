@@ -1,4 +1,4 @@
-package ru.beta2.platform.mongosync.emitter;
+package ru.beta2.platform.mongosync.emitter.emit;
 
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -15,10 +15,22 @@ import java.util.Collection;
 public class EmitManager implements EmitManagerCover, CoverRegistrable
 {
 
-    public HandlerRegistration addListener(EmitListener listener)
+    private EmitListener listener;
+
+    public HandlerRegistration setListener(EmitListener listener)
     {
-        // todo !!! implement
-        return null;
+        if (listener != null) {
+            throw new IllegalStateException("EmitListener already assigned");
+        }
+        this.listener = listener;
+        return new HandlerRegistration()
+        {
+            @Override
+            public void removeHandler()
+            {
+                EmitManager.this.listener = null;
+            }
+        };
     }
 
     @Override

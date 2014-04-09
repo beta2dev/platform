@@ -5,6 +5,12 @@ import org.picocontainer.Startable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.beta2.platform.core.util.HandlerRegistration;
+import ru.beta2.platform.mongosync.emitter.emit.EmitInfo;
+import ru.beta2.platform.mongosync.emitter.emit.EmitListener;
+import ru.beta2.platform.mongosync.emitter.emit.EmitListenerException;
+import ru.beta2.platform.mongosync.emitter.emit.EmitManager;
+import ru.beta2.platform.mongosync.emitter.oplog.OplogHandler;
+import ru.beta2.platform.mongosync.emitter.oplog.ProcessOplogException;
 import ru.beta2.platform.mongosync.protocol.CloneCollectionsMessage;
 import ru.beta2.platform.mongosync.protocol.OplogRecordMessage;
 
@@ -15,7 +21,7 @@ import java.util.*;
  * Date: 18.02.14
  * Time: 0:40
  */
-public class MongoSyncEmitter implements Startable, OplogReader.Handler
+public class MongoSyncEmitter implements Startable, OplogHandler
 {
 
     private final Logger log = LoggerFactory.getLogger(MongoSyncEmitter.class);
@@ -43,7 +49,7 @@ public class MongoSyncEmitter implements Startable, OplogReader.Handler
         log.trace("Starting MongoSyncEmitter");
 
         synchronized (emitLock) {
-            emitReg = emitManager.addListener(new EmitSyncListener());
+            emitReg = emitManager.setListener(new EmitSyncListener());
             for (EmitInfo emit : emitManager.getEmits()) {
                 addRoutes(emit.getAddress(), emit.getNamespaces());
             }
@@ -64,9 +70,8 @@ public class MongoSyncEmitter implements Startable, OplogReader.Handler
     }
 
     @Override
-    public void processOplogRecord(BasicBSONObject record)
+    public void processOplogRecord(BasicBSONObject record) throws ProcessOplogException
     {
-        // todo !!! we heed smart handling send error
         // todo !!! handle binary data
         if ("n".equals(record.getString("op"))) {
             return;
@@ -77,7 +82,14 @@ public class MongoSyncEmitter implements Startable, OplogReader.Handler
             if (routes.isEmpty()) {
                 return;
             }
-            transmitter.sendMessage(routes, new OplogRecordMessage(record));
+            try {
+                transmitter.sendMessage(routes, new OplogRecordMessage(record));
+            }
+            catch (TransmitException e) {
+                String logmsg = "Error send OplogRecordMessage: ns=" + ns + ", routes=" + routes;
+                log.error(logmsg, e);
+                throw new ProcessOplogException(logmsg, e);
+            }
         }
     }
 
@@ -113,11 +125,18 @@ public class MongoSyncEmitter implements Startable, OplogReader.Handler
     private class EmitSyncListener implements EmitListener
     {
         @Override
-        public void onEmitStart(String address, Set<String> namespaces)
+        public void onEmitStart(String address, Set<String> namespaces) throws EmitListenerException
         {
             synchronized (emitLock) {
-                transmitter.sendMessage(address,
-                        new CloneCollectionsMessage(cfg.getCloneCollectionHostname(), namespaces));
+                try {
+                    transmitter.sendMessage(address,
+                            new CloneCollectionsMessage(cfg.getCloneCollectionHostname(), namespaces));
+                }
+                catch (TransmitException e) {
+                    String logmsg = "Error send CloneCollectionsMessage to address '" + address + "'";
+                    log.error(logmsg, e);
+                    throw new EmitListenerException(logmsg, e);
+                }
                 addRoutes(address, namespaces);
             }
         }

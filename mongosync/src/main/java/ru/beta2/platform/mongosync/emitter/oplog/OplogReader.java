@@ -1,9 +1,9 @@
-package ru.beta2.platform.mongosync.emitter;
+package ru.beta2.platform.mongosync.emitter.oplog;
 
-import org.bson.BasicBSONObject;
 import org.picocontainer.Startable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.beta2.platform.mongosync.emitter.EmitterConfig;
 
 /**
  * User: inc
@@ -13,18 +13,13 @@ import org.slf4j.LoggerFactory;
 public class OplogReader implements Startable
 {
 
-    public interface Handler
-    {
-        void processOplogRecord(BasicBSONObject record);
-    }
-
     private final Logger log = LoggerFactory.getLogger(OplogReader.class);
 
     private final EmitterConfig cfg;
 
-    private final Handler handler;
+    private final OplogHandler handler;
 
-    public OplogReader(EmitterConfig cfg, Handler handler)
+    public OplogReader(EmitterConfig cfg, OplogHandler handler)
     {
         this.cfg = cfg;
         this.handler = handler;

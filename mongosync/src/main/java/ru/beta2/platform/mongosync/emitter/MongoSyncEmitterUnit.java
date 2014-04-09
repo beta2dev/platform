@@ -5,6 +5,8 @@ import ru.beta2.platform.core.assembly.AssemblyUnit;
 import ru.beta2.platform.core.assembly.PicoContainerFactory;
 import ru.beta2.platform.core.config.ConfigService;
 import ru.beta2.platform.core.undercover.CoverRegistrator;
+import ru.beta2.platform.mongosync.emitter.emit.EmitManager;
+import ru.beta2.platform.mongosync.emitter.oplog.OplogReader;
 
 import java.util.concurrent.Executor;
 

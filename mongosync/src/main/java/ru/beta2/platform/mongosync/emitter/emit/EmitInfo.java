@@ -1,4 +1,4 @@
-package ru.beta2.platform.mongosync.emitter;
+package ru.beta2.platform.mongosync.emitter.emit;
 
 import java.util.Set;
 
