@@ -1,6 +1,10 @@
 package ru.beta2.platform.mongosync.protocol;
 
-import org.bson.BasicBSONObject;
+import org.bson.BSON;
+import org.bson.BSONObject;
+import org.hornetq.api.core.client.ClientMessage;
+
+import java.io.ByteArrayInputStream;
 
 /**
  * User: inc
@@ -10,15 +14,31 @@ import org.bson.BasicBSONObject;
 public class OplogRecordMessage extends ProtocolMessage
 {
 
-    private BasicBSONObject oplogRecord;
+    private BSONObject oplogRecord;
 
-    public OplogRecordMessage(BasicBSONObject oplogRecord)
+    public OplogRecordMessage(BSONObject oplogRecord)
     {
         this.oplogRecord = oplogRecord;
     }
 
-    public BasicBSONObject getOplogRecord()
+    public BSONObject getOplogRecord()
     {
         return oplogRecord;
+    }
+
+    @Override
+    public ClientMessage toHornetQMessage(ClientMessage message)
+    {
+        message.putStringProperty("cmd", "oplog");
+        message.setBodyInputStream(new ByteArrayInputStream(BSON.encode(oplogRecord)));
+        return message;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "OplogRecordMessage{" +
+                "oplogRecord=" + oplogRecord +
+                '}';
     }
 }

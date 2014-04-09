@@ -43,10 +43,10 @@ public class JobExecutionMonitor implements Startable
     {
         log.trace("Start JobExecutionMonitor");
 
+        coll = mongo.getDB(cfg.getDbName()).getCollection(cfg.getCollectionName());
+
         if (cfg.isEnabled()) {
             log.debug("Job execution monitoring is ENABLED");
-
-            coll = mongo.getDB(cfg.getDbName()).getCollection(cfg.getCollectionName());
 
             BasicDBObject indx = new BasicDBObject();
             indx.put("jobKey.group", 1);
@@ -77,9 +77,8 @@ public class JobExecutionMonitor implements Startable
                 log.error("Error remove job listener", e);
                 throw new LifecycleException("Error remove job listener", e);
             }
-
-            coll = null;
         }
+        coll = null;
     }
 
     public List<JobExecutionInfo> getJobExecutions(ObjectKey jobKey, Integer limit)
@@ -100,6 +99,7 @@ public class JobExecutionMonitor implements Startable
         for (DBObject o : c) {
             result.add(new JobExecutionInfo((BasicBSONObject) o));
         }
+        log.debug("Get job executions count: {}", result.size());
         return result;
     }
 

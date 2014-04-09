@@ -1,9 +1,12 @@
 package ru.beta2.platform.mongosync;
 
+import org.picocontainer.Characteristics;
 import ru.beta2.platform.core.assembly.Module;
 import ru.beta2.platform.core.assembly.ModuleContext;
 import ru.beta2.platform.mongosync.emitter.MongoSyncEmitterUnit;
 import ru.beta2.platform.mongosync.receiver.MongoSyncReceiverUnit;
+
+import static org.picocontainer.Characteristics.CACHE;
 
 /**
  * User: inc
@@ -15,7 +18,7 @@ public class MongoSyncModule implements Module
     @Override
     public void mount(ModuleContext ctx)
     {
-        ctx.getApplicationContainer().addComponent(MongoSyncEmitterUnit.class);
-        ctx.getApplicationContainer().addComponent(MongoSyncReceiverUnit.class);
+        ctx.getApplicationContainer().as(CACHE).addComponent(MongoSyncEmitterUnit.class);
+        ctx.getApplicationContainer().as(CACHE).addComponent(MongoSyncReceiverUnit.class);
     }
 }

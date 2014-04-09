@@ -1,6 +1,6 @@
 package ru.beta2.platform.mongosync.emitter.oplog;
 
-import org.bson.BasicBSONObject;
+import org.bson.BSONObject;
 
 /**
  * User: inc
@@ -9,5 +9,5 @@ import org.bson.BasicBSONObject;
  */
 public interface OplogHandler
 {
-    void processOplogRecord(BasicBSONObject record) throws ProcessOplogException;
+    void processOplogRecord(BSONObject record) throws ProcessOplogException;
 }

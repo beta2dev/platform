@@ -10,6 +10,8 @@ import org.picocontainer.Startable;
 public class MongoSyncReceiver implements Startable
 {
 
+//    private final
+
     @Override
     public void start()
     {

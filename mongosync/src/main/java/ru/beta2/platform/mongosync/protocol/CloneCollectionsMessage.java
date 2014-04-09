@@ -1,5 +1,8 @@
 package ru.beta2.platform.mongosync.protocol;
 
+import org.apache.commons.lang.StringUtils;
+import org.hornetq.api.core.client.ClientMessage;
+
 import java.util.Set;
 
 /**
@@ -27,5 +30,23 @@ public class CloneCollectionsMessage extends ProtocolMessage
     public Set<String> getCollections()
     {
         return collections;
+    }
+
+    @Override
+    public ClientMessage toHornetQMessage(ClientMessage message)
+    {
+        message.putStringProperty("cmd", "clone");
+        message.putStringProperty("hostname", hostname);
+        message.putStringProperty("collections", StringUtils.join(collections, ','));
+        return message;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "CloneCollectionsMessage{" +
+                "hostname='" + hostname + '\'' +
+                ", collections=" + collections +
+                '}';
     }
 }

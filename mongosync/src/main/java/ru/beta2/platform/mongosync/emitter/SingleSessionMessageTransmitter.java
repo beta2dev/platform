@@ -22,7 +22,6 @@ public class SingleSessionMessageTransmitter implements MessageTransmitter, Star
 {
 
     private final Logger log = LoggerFactory.getLogger(SingleSessionMessageTransmitter.class);
-    // todo !!! add more logging
 
     private final SingleSessionHelper sessionHelper;
 
@@ -36,6 +35,7 @@ public class SingleSessionMessageTransmitter implements MessageTransmitter, Star
     @Override
     public synchronized void sendMessage(String address, ProtocolMessage message) throws TransmitException
     {
+        log.debug("Send message: address={}, message={}", address, message);
         try {
             producer.send(address, toClientMessage(message));
         }
@@ -48,8 +48,10 @@ public class SingleSessionMessageTransmitter implements MessageTransmitter, Star
     @Override
     public synchronized void sendMessage(Set<String> addresses, ProtocolMessage message) throws TransmitException
     {
+        log.debug("Send messages: addresses={}, message={}", addresses, message);
         try {
             for (String address : addresses) {
+                log.trace("Send to {}", address);
                 producer.send(address, toClientMessage(message));
             }
         }
@@ -64,6 +66,7 @@ public class SingleSessionMessageTransmitter implements MessageTransmitter, Star
     {
         sessionHelper.create();
         try {
+            log.trace("Create message producer");
             producer = sessionHelper.getSession().createProducer();
         }
         catch (HornetQException e) {

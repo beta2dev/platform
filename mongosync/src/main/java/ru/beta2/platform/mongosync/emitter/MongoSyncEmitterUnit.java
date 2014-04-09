@@ -7,6 +7,7 @@ import ru.beta2.platform.core.config.ConfigService;
 import ru.beta2.platform.core.undercover.CoverRegistrator;
 import ru.beta2.platform.mongosync.emitter.emit.EmitManager;
 import ru.beta2.platform.mongosync.emitter.oplog.OplogReader;
+import ru.beta2.platform.mongosync.emitter.oplog.OplogTracker;
 
 import java.util.concurrent.Executor;
 
@@ -45,6 +46,7 @@ public class MongoSyncEmitterUnit extends AssemblyUnit
         pico.as(CACHE).addComponent(MongoSyncEmitter.class);
         pico.as(CACHE).addComponent(EmitManager.class);
         pico.as(CACHE).addComponent(OplogReader.class);
+        pico.as(CACHE).addComponent(OplogTracker.class);
         pico.as(CACHE).addComponent(SingleSessionMessageTransmitter.class);
     }
 }

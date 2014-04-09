@@ -12,12 +12,12 @@ public interface EmitManagerCover
 
     Collection<EmitInfo> getEmits();
 
-    void startEmit(String address, String... namespaces);
+    void startEmit(String address, Collection<String> namespaces);
 
     void stopEmitAll(String address);
 
-    void stopEmit(String address, String... namespaces);
+    void stopEmit(String address, Collection<String> namespaces);
 
-    void changeEmit(String address, String... namespaces);
+    void changeEmit(String address, Collection<String> namespaces);
 
 }

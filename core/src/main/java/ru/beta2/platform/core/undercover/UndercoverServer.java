@@ -1,5 +1,6 @@
 package ru.beta2.platform.core.undercover;
 
+import com.caucho.hessian.io.HessianFactory;
 import com.caucho.hessian.io.SerializerFactory;
 import com.caucho.hessian.server.HessianSkeleton;
 import io.undertow.Undertow;
@@ -30,7 +31,6 @@ public class UndercoverServer implements Startable, UndercoverService
     private final Logger log = LoggerFactory.getLogger(UndercoverServer.class);
 
     private final Map<String, HessianSkeleton> skeletons = Collections.synchronizedMap(new HashMap<String, HessianSkeleton>());
-    private final SerializerFactory serializerFactory = new SerializerFactory();
 
     private final UndercoverConfig cfg;
     private final Undertow server;
@@ -144,7 +144,7 @@ public class UndercoverServer implements Startable, UndercoverService
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "x-application/hessian");
         exchange.startBlocking();
         try {
-            skeleton.invoke(exchange.getInputStream(), exchange.getOutputStream(), serializerFactory);
+            skeleton.invoke(exchange.getInputStream(), exchange.getOutputStream());
         }
         catch (Exception e) {
             log.error("Error invoke skeleton", e);

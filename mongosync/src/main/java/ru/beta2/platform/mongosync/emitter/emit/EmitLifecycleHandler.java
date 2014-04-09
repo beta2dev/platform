@@ -7,10 +7,10 @@ import java.util.Set;
  * Date: 04.04.14
  * Time: 23:18
  */
-public interface EmitListener
+public interface EmitLifecycleHandler
 {
 
-    void onEmitStart(String address, Set<String> namespaces) throws EmitListenerException;
+    void onEmitStart(String address, Set<String> namespaces) throws EmitLifecycleException;
 
     void onEmitStop(String address, Set<String> namespaces);
 

@@ -23,14 +23,29 @@ public class EmitterConfig
         return cfg.getBoolean("enabled", false);
     }
 
-    public String getRoutesDbName()
+    public String getEmitsDbName()
     {
-        return cfg.getString("dbName", MongoConstants.DEFAULT_DB_NAME);
+        return cfg.getString("emitsDbName", "local");
     }
 
-    public String getRoutesCollectionName()
+    public String getEmitsCollectionName()
     {
-        return cfg.getString("collectionName", "mongosync.emitter.routes");
+        return cfg.getString("emitsCollectionName", "mongosync.emitter.emits");
+    }
+
+    public String getOplogTrackerDbName()
+    {
+        return cfg.getString("oplogTrackerDbName", "local");
+    }
+
+    public String getOplogTrackerCollectionName()
+    {
+        return cfg.getString("oplogTrackerCollectionName", "mongosync.emitter.tracks");
+    }
+
+    public String getOplogTrackerKey()
+    {
+        return cfg.getString("oplogTrackerKey", "defaultTracker");
     }
 
     public String getCloneCollectionHostname()
@@ -46,6 +61,16 @@ public class EmitterConfig
     public String getOplogCollectionName()
     {
         return cfg.getString("oplogCollectionName", "oplog.$main");
+    }
+
+    public boolean isOplogRepeatReadOnError()
+    {
+        return cfg.getBoolean("oplogRepeatReadOnError", true);
+    }
+
+    public int getOplogRepeatReadOnErrorInterval()
+    {
+        return cfg.getInt("oplogRepeatReadOnErrorInterval", 1000);
     }
 
 }

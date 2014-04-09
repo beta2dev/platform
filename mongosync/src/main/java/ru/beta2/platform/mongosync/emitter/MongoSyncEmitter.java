@@ -1,13 +1,13 @@
 package ru.beta2.platform.mongosync.emitter;
 
-import org.bson.BasicBSONObject;
+import org.bson.BSONObject;
 import org.picocontainer.Startable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.beta2.platform.core.util.HandlerRegistration;
 import ru.beta2.platform.mongosync.emitter.emit.EmitInfo;
-import ru.beta2.platform.mongosync.emitter.emit.EmitListener;
-import ru.beta2.platform.mongosync.emitter.emit.EmitListenerException;
+import ru.beta2.platform.mongosync.emitter.emit.EmitLifecycleException;
+import ru.beta2.platform.mongosync.emitter.emit.EmitLifecycleHandler;
 import ru.beta2.platform.mongosync.emitter.emit.EmitManager;
 import ru.beta2.platform.mongosync.emitter.oplog.OplogHandler;
 import ru.beta2.platform.mongosync.emitter.oplog.ProcessOplogException;
@@ -25,7 +25,6 @@ public class MongoSyncEmitter implements Startable, OplogHandler
 {
 
     private final Logger log = LoggerFactory.getLogger(MongoSyncEmitter.class);
-    // todo !!! add more logging
 
     private final EmitterConfig cfg;
     private final EmitManager emitManager;
@@ -49,7 +48,7 @@ public class MongoSyncEmitter implements Startable, OplogHandler
         log.trace("Starting MongoSyncEmitter");
 
         synchronized (emitLock) {
-            emitReg = emitManager.setListener(new EmitSyncListener());
+            emitReg = emitManager.setLifecycleHandler(new EmitSyncListener());
             for (EmitInfo emit : emitManager.getEmits()) {
                 addRoutes(emit.getAddress(), emit.getNamespaces());
             }
@@ -70,19 +69,24 @@ public class MongoSyncEmitter implements Startable, OplogHandler
     }
 
     @Override
-    public void processOplogRecord(BasicBSONObject record) throws ProcessOplogException
+    public void processOplogRecord(BSONObject record) throws ProcessOplogException
     {
+        log.debug("Process oplog record: {}", record);
+
         // todo !!! handle binary data
-        if ("n".equals(record.getString("op"))) {
+        if ("n".equals(record.get("op"))) {
+            log.trace("Noop, do nothing");
             return;
         }
-        String ns = record.getString("ns");
+        String ns = String.valueOf(record.get("ns"));
         synchronized (emitLock) {
             Set<String> routes = getNamespaceRoutes(ns);
             if (routes.isEmpty()) {
+                log.trace("No routes for namespace '{}', do nothing", ns);
                 return;
             }
             try {
+                log.debug("Send OplogRecordMessage to routes: {}", routes);
                 transmitter.sendMessage(routes, new OplogRecordMessage(record));
             }
             catch (TransmitException e) {
@@ -101,6 +105,7 @@ public class MongoSyncEmitter implements Startable, OplogHandler
 
     private void addRoutes(String address, Set<String> namespaces)
     {
+        log.debug("Add routes: address={}, namespaces={}", address, namespaces);
         for (String ns : namespaces) {
             Set<String> routes = namespaceRoutes.get(ns);
             if (routes == null) {
@@ -113,6 +118,7 @@ public class MongoSyncEmitter implements Startable, OplogHandler
 
     private void removeRoutes(String address, Set<String> namespaces)
     {
+        log.debug("Remove routes: address={}, namespaces={}", address, namespaces);
         for (String ns : namespaces) {
             Set<String> routes = namespaceRoutes.get(ns);
             if (routes == null) {
@@ -122,20 +128,22 @@ public class MongoSyncEmitter implements Startable, OplogHandler
         }
     }
 
-    private class EmitSyncListener implements EmitListener
+    private class EmitSyncListener implements EmitLifecycleHandler
     {
         @Override
-        public void onEmitStart(String address, Set<String> namespaces) throws EmitListenerException
+        public void onEmitStart(String address, Set<String> namespaces) throws EmitLifecycleException
         {
+            log.trace("onEmitStart: address={}, namespaces={}", address, namespaces);
             synchronized (emitLock) {
                 try {
+                    log.trace("Send CloneCollectionsMessage");
                     transmitter.sendMessage(address,
                             new CloneCollectionsMessage(cfg.getCloneCollectionHostname(), namespaces));
                 }
                 catch (TransmitException e) {
                     String logmsg = "Error send CloneCollectionsMessage to address '" + address + "'";
                     log.error(logmsg, e);
-                    throw new EmitListenerException(logmsg, e);
+                    throw new EmitLifecycleException(logmsg, e);
                 }
                 addRoutes(address, namespaces);
             }
@@ -144,6 +152,7 @@ public class MongoSyncEmitter implements Startable, OplogHandler
         @Override
         public void onEmitStop(String address, Set<String> namespaces)
         {
+            log.debug("onEmitStop: address={}, namespaces={}", address, namespaces);
             synchronized (emitLock) {
                 removeRoutes(address, namespaces);
             }
