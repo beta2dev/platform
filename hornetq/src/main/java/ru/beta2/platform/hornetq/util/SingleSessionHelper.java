@@ -40,7 +40,7 @@ public class SingleSessionHelper
 
         try {
             log.trace("Create HornetQ session");
-            session = sessionFactory.createSession();
+            session = createSession(sessionFactory);
         }
         catch (HornetQException e) {
             log.error("Error create HornetQ session", e);
@@ -88,5 +88,10 @@ public class SingleSessionHelper
     public ClientSession getSession()
     {
         return session;
+    }
+
+    protected ClientSession createSession(ClientSessionFactory sessionFactory) throws HornetQException
+    {
+        return sessionFactory.createSession();
     }
 }
