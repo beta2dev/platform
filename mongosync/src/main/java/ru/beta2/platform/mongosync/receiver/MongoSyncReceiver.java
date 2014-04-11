@@ -227,8 +227,13 @@ public class MongoSyncReceiver implements Startable
         Namespace ns = new Namespace(namespace);
         DB db = mongo.getDB(ns.db);
         if (db.collectionExists(ns.collection)) {
-            log.debug("Drop existent collection '{}'", namespace);
-            db.getCollection(ns.collection).drop();
+            if (cfg.isDropExistentCollectionBeforeClone()) {
+                log.debug("Drop existent collection '{}'", namespace);
+                db.getCollection(ns.collection).drop();
+            }
+            else {
+                log.debug("Collection '{}' exists, but not dropped due configuration", namespace);
+            }
         }
     }
 

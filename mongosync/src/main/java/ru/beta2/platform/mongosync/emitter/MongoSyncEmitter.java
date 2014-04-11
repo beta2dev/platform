@@ -73,7 +73,6 @@ public class MongoSyncEmitter implements Startable, OplogHandler
     {
         log.debug("Process oplog record: {}", record);
 
-        // todo !!! handle binary data
         if ("n".equals(record.get("op"))) {
             log.trace("Noop, do nothing");
             return;

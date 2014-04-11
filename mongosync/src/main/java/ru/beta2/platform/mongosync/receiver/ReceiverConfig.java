@@ -41,6 +41,11 @@ public class ReceiverConfig
         return cfg.getBoolean("autoCreateQueue", true);
     }
 
+    public boolean isDropExistentCollectionBeforeClone()
+    {
+        return cfg.getBoolean("dropExistentCollectionBeforeClone", true);
+    }
+
     public int getReceiveTimeout()
     {
         return cfg.getInt("receiveTimeout", 1000);
