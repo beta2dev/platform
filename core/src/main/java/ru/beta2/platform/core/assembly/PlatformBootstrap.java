@@ -14,17 +14,14 @@ import ru.beta2.platform.core.mongo.MongoComponent;
 import ru.beta2.platform.core.mongo.MongoConnectionConfig;
 import ru.beta2.platform.core.undercover.UndercoverConfig;
 import ru.beta2.platform.core.undercover.UndercoverServer;
+import ru.beta2.platform.core.util.LifecycleException;
 
-import javax.management.MBeanServer;
 import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayDeque;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import static org.picocontainer.Characteristics.CACHE;
 
@@ -39,19 +36,31 @@ public class PlatformBootstrap
     // todo DEFFERED реализовать независимое от ошибок pico ComponentMonitor (да и вообще управление запуском/перезапуском)
     // (то есть нужно бы сделать, чтобы ошибка при старте модуля/юнита не приводила к остановке старта сервера)
 
-    private final static String PLATFORM_CONFIG_URL = "/platform.properties";
+    private final static String DEFAULT_PLATFORM_CONFIG_URL = "platform.properties";
 
     private final Logger log = LoggerFactory.getLogger(PlatformBootstrap.class);
+    private final Configuration cfg;
     private final DefaultPicoContainer rootContainer;
 
-    public PlatformBootstrap()
+    public PlatformBootstrap(Configuration cfg)
     {
+        this.cfg = cfg;
         rootContainer = new DefaultPicoContainer();
     }
 
     public static void main(String[] args)
     {
-        new PlatformBootstrap().run();
+        try {
+            new PlatformBootstrap(getPlatformConfiguration(
+                    args != null && args.length > 0 ? args[0] : DEFAULT_PLATFORM_CONFIG_URL
+            )).run();
+        }
+        catch (MalformedURLException e) {
+            throw new LifecycleException("Error accessing platform properties file", e);
+        }
+        catch (ConfigurationException e) {
+            throw new LifecycleException("Error parsing platform properties file", e);
+        }
     }
 
     void run()
@@ -61,42 +70,14 @@ public class PlatformBootstrap
 
         Runtime.getRuntime().addShutdownHook(new Shutdown());
         BootstrapExecutor executor = new BootstrapExecutor();
-        try {
-            Configuration cfg = getPlatformConfiguration();
 
-            // MongoDB
-            rootContainer.addComponent(new MongoConnectionConfig(cfg.subset("mongo")));
-            rootContainer.as(CACHE).addAdapter(new MongoComponent());
+        setupComponents(executor);
 
-            // ConfigServer
-            rootContainer.addComponent(new ConfigServerConfig(cfg.subset("config")));
-            rootContainer.as(CACHE).addComponent(ConfigServer.class);
+        // Start
+        log.info("Starting root container");
+        rootContainer.start();
 
-            // Undercover
-            rootContainer.addComponent(new UndercoverConfig(cfg.subset("undercover")));
-            rootContainer.as(CACHE).addComponent(UndercoverServer.class);
-
-            // Application AssemblyUnit
-            rootContainer.addComponent(new DefaultPicoContainerFactory(rootContainer));
-            rootContainer.addComponent(new ApplicationConfig(cfg.subset("app")));
-            rootContainer.as(CACHE).addComponent(ApplicationUnit.class);
-
-            // Executor
-            rootContainer.addComponent(executor);
-
-            // Start
-            log.info("Starting root container");
-            rootContainer.start();
-            log.info("Root container started");
-        }
-        catch (MalformedURLException e) {
-            log.error("Error accessing platform properties file", e);
-            throw new RuntimeException(e);
-        }
-        catch (ConfigurationException e) {
-            log.error("Error parsing platform properties file", e);
-            throw new RuntimeException(e);
-        }
+        log.info("Root container started");
         long elapsed = System.currentTimeMillis() - startAt;
         log.info("*** SERVER IS STARTED in " + elapsed + " ms ***");
 
@@ -107,9 +88,38 @@ public class PlatformBootstrap
     //  Implementation
     //
 
-    private Configuration getPlatformConfiguration() throws MalformedURLException, ConfigurationException
+    private void setupComponents(BootstrapExecutor executor)
     {
-        URL props = getClass().getResource(PLATFORM_CONFIG_URL);
+        // MongoDB
+        rootContainer.addComponent(new MongoConnectionConfig(cfg.subset("mongo")));
+        rootContainer.as(CACHE).addAdapter(new MongoComponent());
+
+        // ConfigServer
+        rootContainer.addComponent(new ConfigServerConfig(cfg.subset("config")));
+        rootContainer.as(CACHE).addComponent(ConfigServer.class);
+
+        // Undercover
+        rootContainer.addComponent(new UndercoverConfig(cfg.subset("undercover")));
+        rootContainer.as(CACHE).addComponent(UndercoverServer.class);
+
+        // Application AssemblyUnit
+        ApplicationConfig appConfig = new ApplicationConfig(cfg.subset("app"));
+        if (appConfig.isEnabled()) {
+            rootContainer.addComponent(new DefaultPicoContainerFactory(rootContainer));
+            rootContainer.addComponent(appConfig);
+            rootContainer.as(CACHE).addComponent(ApplicationUnit.class);
+        }
+        else {
+            log.info("Application is DISABLED");
+        }
+
+        // Executor
+        rootContainer.addComponent(executor);
+    }
+
+    private static Configuration getPlatformConfiguration(String configResource) throws MalformedURLException, ConfigurationException
+    {
+        URL props = PlatformBootstrap.class.getResource("/" + configResource);
         return props != null ? new PropertiesConfiguration(props) : new BaseConfiguration();
     }
 

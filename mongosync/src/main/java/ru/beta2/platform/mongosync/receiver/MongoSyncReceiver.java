@@ -2,6 +2,7 @@ package ru.beta2.platform.mongosync.receiver;
 
 import com.mongodb.*;
 import org.bson.BSONObject;
+import org.bson.BasicBSONObject;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.*;
@@ -170,27 +171,23 @@ public class MongoSyncReceiver implements Startable
         log.debug("Process oplog record: {}", msg);
         BSONObject obj = msg.getOplogRecord();
         String op = (String) obj.get("op");
-        String ns = (String) obj.get("ns");
-        int idx = ns.indexOf('.');
-        if (idx == -1) {
-            log.error("Invalid namespace: '{}'", ns);
-            throw new IllegalArgumentException("Invalid namespace: '" + ns + "'");
-        }
-        String db = ns.substring(0, idx);
-        String collection = ns.substring(idx + 1);
-        DBCollection coll = mongo.getDB(db).getCollection(collection);
+        Namespace ns = new Namespace((String) obj.get("ns"));
+        DBCollection coll = mongo.getDB(ns.db).getCollection(ns.collection);
         if ("u".equals(op)) {
-            log.debug("Update: db={}, collection={}, oplog={}", db, collection, obj);
-            coll.update((DBObject) obj.get("o2"), (DBObject) obj.get("o"), false, false, cfg.getOplogWriteConcern());
+            log.debug("Update: db={}, collection={}, oplog={}", ns.db, ns.collection, obj);
+            coll.update(
+                    new BasicDBObject((BasicBSONObject) obj.get("o2")),
+                    new BasicDBObject((BasicBSONObject) obj.get("o")),
+                    false, false, cfg.getOplogWriteConcern());
         }
         else if ("i".equals(op)) {
-            log.debug("Insert: db={}, collection={}, oplog={}", db, collection, obj);
-            DBObject o = (DBObject) obj.get("o");
+            log.debug("Insert: db={}, collection={}, oplog={}", ns.db, ns.collection, obj);
+            DBObject o = new BasicDBObject((BasicBSONObject) obj.get("o"));
             coll.update(new BasicDBObject("_id", o.get("_id")), o, true, false, cfg.getOplogWriteConcern());
         }
         else if ("d".equals(op)) {
-            log.debug("Delete: db={}, collection={}, oplog={}", db, collection, obj);
-            coll.remove((DBObject) obj.get("o"));
+            log.debug("Delete: db={}, collection={}, oplog={}", ns.db, ns.collection, obj);
+            coll.remove(new BasicDBObject((BasicBSONObject) obj.get("o")));
         }
         else {
             log.warn("Unknown db operation: {}", obj);
@@ -205,6 +202,9 @@ public class MongoSyncReceiver implements Startable
 
         for (String ns : msg.getCollections()) {
             log.debug("Clone collection '{}' from '{}'", ns, from);
+
+            checkNamespaceClear(ns);
+
             BasicDBObject cmd = new BasicDBObject();
             cmd.put("cloneCollection", ns);
             cmd.put("from", from);
@@ -214,11 +214,21 @@ public class MongoSyncReceiver implements Startable
                 log.trace("Clone result is ok, continue");
             }
             else {
-                log.error("Clone '{}' from '{}' failed: {}", result.getErrorMessage());
+                log.error("Clone '{}' from '{}' failed: {}", ns, from, result.getErrorMessage());
                 rollback();
                 stopConsumeOnError("CloneCollections");
                 return; // ===>
             }
+        }
+    }
+
+    private void checkNamespaceClear(String namespace)
+    {
+        Namespace ns = new Namespace(namespace);
+        DB db = mongo.getDB(ns.db);
+        if (db.collectionExists(ns.collection)) {
+            log.debug("Drop existent collection '{}'", namespace);
+            db.getCollection(ns.collection).drop();
         }
     }
 
@@ -304,6 +314,23 @@ public class MongoSyncReceiver implements Startable
         {
             log.trace("MessageProcessor running off");
             running = false;
+        }
+    }
+
+    private class Namespace
+    {
+        String db;
+        String collection;
+
+        private Namespace(String ns)
+        {
+            int idx = ns.indexOf('.');
+            if (idx == -1) {
+                log.error("Invalid namespace: '{}'", ns);
+                throw new IllegalArgumentException("Invalid namespace: '" + ns + "'");
+            }
+            db = ns.substring(0, idx);
+            collection = ns.substring(idx + 1);
         }
     }
 

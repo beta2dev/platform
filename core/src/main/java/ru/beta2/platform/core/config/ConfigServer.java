@@ -80,7 +80,7 @@ public class ConfigServer implements ConfigService, Startable
     public void start()
     {
         log.trace("Starting ConfigServer");
-        configCollection = mongo.getDB(cfg.getConfigDB()).getCollection(cfg.getConfigCollection());
+        configCollection = mongo.getDB(cfg.getConfigDbName()).getCollection(cfg.getConfigCollectionName());
         configCollection.ensureIndex("name");
         undercoverRegistration = undercover.registerCover("/config", ConfigServiceCover.class, this);
         log.info("ConfigServer started");

@@ -1,0 +1,32 @@
+<resource>
+
+    <data-model>
+        <list path="/emits/emit">
+            <columns>
+                <column title="Адрес" path="@address"/>
+                <column title="Коллекции" path="@namespaces"/>
+
+                <column meta="uri" visible="false" path="@uri"/>
+            </columns>
+        </list>
+    </data-model>
+
+    <operations>
+        <get format="xml"/>
+    </operations>
+
+    <actions>
+        <refresh/>
+        <separator/>
+
+        <create uri="ADDRESS"/>
+
+        <edit id="edit" selection="list"/>
+
+    </actions>
+
+    <actions name="item-inplace">
+        <action ref="edit" title="edit"/>
+    </actions>
+
+</resource>

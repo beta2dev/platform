@@ -19,5 +19,7 @@ return [
         '/ru/beta2/platform/scheduler/jobs/{group}/{name}/triggers/{trgroup}/{trname}/pause',
         '/ru/beta2/platform/scheduler/jobs/{group}/{name}/triggers/{trgroup}/{trname}/resume',
         '/ru/beta2/platform/scheduler/jobs/{group}/{name}/triggers/{trgroup}/{trname}/delete', // todo DEFFERED переделать на HTTP DELETE
+        '/ru/beta2/platform/mongosync/emits/{address}',
+        '/ru/beta2/platform/mongosync/emits/{address}/_ui',
     ]
 ];

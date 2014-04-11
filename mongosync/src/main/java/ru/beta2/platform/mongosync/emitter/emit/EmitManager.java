@@ -35,10 +35,10 @@ public class EmitManager implements EmitManagerCover, CoverRegistrable
         emits = new Jongo(mongo.getDB(cfg.getEmitsDbName())).getCollection(cfg.getEmitsCollectionName());
     }
 
-    public HandlerRegistration setLifecycleHandler(EmitLifecycleHandler handler)
+    public HandlerRegistration setLifecycleHandler(EmitLifecycleHandler lifecycleHandler)
     {
         log.trace("Set lifecycle listener");
-        if (lifecycleHandler != null) {
+        if (this.lifecycleHandler != null) {
             throw new IllegalStateException("EmitListener already assigned");
         }
         this.lifecycleHandler = lifecycleHandler;
@@ -60,6 +60,13 @@ public class EmitManager implements EmitManagerCover, CoverRegistrable
     }
 
     @Override
+    public EmitInfo getEmit(String address)
+    {
+        log.trace("Get emit for address {}", address);
+        return emits.findOne("{address: #}", address).as(EmitInfo.class);
+    }
+
+    @Override
     public void startEmit(String address, Collection<String> namespaces)
     {
         log.debug("Start emit: address={}, namespaces={}", address, namespaces);
@@ -67,6 +74,7 @@ public class EmitManager implements EmitManagerCover, CoverRegistrable
         if (r == null) {
             log.trace("Create new emit record");
             r = new EmitRecord();
+            r.setAddress(address);
         }
 
         Set<String> added = r.addNamespaces(namespaces);
@@ -142,8 +150,10 @@ public class EmitManager implements EmitManagerCover, CoverRegistrable
         if (r == null) {
             log.debug("EmitRecord not found for address '{}', create new empty EmitRecord", address);
             r = new EmitRecord();
+            r.setAddress(address);
         }
         changeResult = r.changeNamespaces(namespaces);
+        log.debug("Change result: {}", changeResult);
         if (CollectionUtils.isNotEmpty(changeResult.getAdded())) {
             log.trace("Start added emits");
             startEmit(address, changeResult.getAdded());

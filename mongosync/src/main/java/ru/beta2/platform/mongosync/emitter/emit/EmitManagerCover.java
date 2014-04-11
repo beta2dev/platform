@@ -12,6 +12,8 @@ public interface EmitManagerCover
 
     Collection<EmitInfo> getEmits();
 
+    EmitInfo getEmit(String address);
+
     void startEmit(String address, Collection<String> namespaces);
 
     void stopEmitAll(String address);

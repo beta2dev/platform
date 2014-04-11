@@ -17,6 +17,11 @@ public class ApplicationConfig
         this.cfg = cfg;
     }
 
+    public boolean isEnabled()
+    {
+        return cfg.getBoolean("enabled", false);
+    }
+
     public String getConfigName()
     {
         return cfg.getString("configName", "app");

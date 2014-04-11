@@ -2,6 +2,7 @@ package ru.beta2.platform.mongosync.emitter.emit;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -12,7 +13,7 @@ import java.util.Set;
  * Date: 04.04.14
  * Time: 23:13
  */
-public class EmitInfo
+public class EmitInfo implements Serializable
 {
 
     public static class ChangeResult
@@ -37,6 +38,15 @@ public class EmitInfo
         public boolean hasChanges()
         {
             return CollectionUtils.isNotEmpty(added) || CollectionUtils.isNotEmpty(removed);
+        }
+
+        @Override
+        public String toString()
+        {
+            return "ChangeResult{" +
+                    "added=" + added +
+                    ", removed=" + removed +
+                    '}';
         }
     }
 

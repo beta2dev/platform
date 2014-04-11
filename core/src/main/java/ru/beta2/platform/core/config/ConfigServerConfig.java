@@ -17,13 +17,13 @@ public class ConfigServerConfig
         this.cfg = cfg;
     }
 
-    public String getConfigDB()
+    public String getConfigDbName()
     {
-        return cfg.getString("configDB", "platform");
+        return cfg.getString("configDbName", "platform");
     }
 
-    public String getConfigCollection()
+    public String getConfigCollectionName()
     {
-        return cfg.getString("configCollection", "config");
+        return cfg.getString("configCollectionName", "config");
     }
 }

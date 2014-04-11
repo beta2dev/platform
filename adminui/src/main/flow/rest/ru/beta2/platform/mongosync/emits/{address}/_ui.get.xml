@@ -1,0 +1,29 @@
+<resource>
+
+    <data-model>
+        <object path="/emit">
+            <properties>
+                <property name="address" title="Адрес" type="string" path="@address"/>
+                <property name="namespaces" title="Коллекции" type="list" path="namespaces/namespace">
+                    <item type="string" path="text()"/>
+                    <editor type="text" rows="40" delimiter="\n"/>
+                </property>
+            </properties>
+        </object>
+    </data-model>
+
+    <operations>
+        <get format="xml"/>
+        <put name="create" format="json"/>
+        <put name="update" format="json"/>
+    </operations>
+
+    <actions>
+        <save/>
+
+        <separator/>
+
+        <cancel/>
+    </actions>
+
+</resource>

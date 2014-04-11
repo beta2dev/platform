@@ -1,7 +1,6 @@
 package ru.beta2.platform.mongosync.emitter;
 
 import org.apache.commons.configuration.Configuration;
-import ru.beta2.platform.core.mongo.MongoConstants;
 
 /**
  * User: Inc
@@ -63,14 +62,14 @@ public class EmitterConfig
         return cfg.getString("oplogCollectionName", "oplog.$main");
     }
 
-    public boolean isOplogRepeatReadOnError()
+    public boolean isOplogContinueOnProcessError()
     {
-        return cfg.getBoolean("oplogRepeatReadOnError", true);
+        return cfg.getBoolean("oplogContinueOnProcessError", true);
     }
 
-    public int getOplogRepeatReadOnErrorInterval()
+    public int getOplogErrorTimeout()
     {
-        return cfg.getInt("oplogRepeatReadOnErrorInterval", 1000);
+        return cfg.getInt("oplogErrorTimeout", 1000);
     }
 
 }

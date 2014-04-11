@@ -3,6 +3,7 @@
 $availableModules = [
     'ru.beta2.platform.core.config.ConfigServiceCover' => ['name'=>'ru.beta2.platform.core.config', 'title'=>'Конфигурация'],
     'ru.beta2.platform.scheduler.SchedulerCover' => ['name'=>'ru.beta2.platform.scheduler.jobs', 'title'=>'Планировщик'],
+    'ru.beta2.platform.mongosync.emitter.emit.EmitManagerCover' => ['name'=>'ru.beta2.platform.mongosync.emits', 'title'=>'MongoSync'],
 ];
 
 $coversData = file_get_contents(b2config()->platform['undercoverUrl']);

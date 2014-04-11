@@ -1,0 +1,5 @@
+<emit xmlns:a="b2tplxml" a:bind="$emit" address="@address">
+    <namespaces>
+        <namespace a:bindlist="@namespaces" a:text="@it"/>
+    </namespaces>
+</emit>

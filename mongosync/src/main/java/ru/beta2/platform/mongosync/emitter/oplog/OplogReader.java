@@ -63,6 +63,9 @@ public class OplogReader implements Startable
 
         private volatile boolean running;
 
+        private BSONTimestamp lastProcessed;
+        private DBCursor cursor;
+
         private OplogMonitor(DBCollection oplog)
         {
             this.oplog = oplog;
@@ -73,45 +76,64 @@ public class OplogReader implements Startable
         {
             log.trace("Run OplogMonitor");
             running = true;
-            BSONTimestamp lastProcessed = getInitialLastProcessed();
+            lastProcessed = getInitialLastProcessed();
             log.debug("LastProcessed is '{}'", lastProcessed);
             while (running) {
                 DBObject lastProcessedCondition = lastProcessed != null ? new BasicDBObject("ts", new BasicDBObject("$gt", lastProcessed)) : null;
                 log.debug("Create DBCursor with lastProcessedCondition={}", lastProcessedCondition);
-                DBCursor cursor = oplog.find(lastProcessedCondition).addOption(Bytes.QUERYOPTION_TAILABLE).addOption(Bytes.QUERYOPTION_AWAITDATA);
-                log.trace("About to start cycle");
-                while (cursor.hasNext()) {
-                    log.trace("Get next oplog record");
-                    DBObject obj = cursor.next();
-                    try {
-                        log.trace("Process next oplog record");
-                        handler.processOplogRecord(obj);
-                        lastProcessed = (BSONTimestamp) obj.get("ts");
-                        log.debug("Oplog record processed, ts={}", lastProcessed);
-                        tracker.setLastProcessed(lastProcessed);
-                    }
-                    catch (ProcessOplogException e) {
-                        log.error("Error process oplog record", e);
-                        if (cfg.isOplogRepeatReadOnError()) {
-                            log.trace("Repeat oplog read after {} ms", cfg.getOplogRepeatReadOnErrorInterval());
-                            try {
-                                Thread.sleep(cfg.getOplogRepeatReadOnErrorInterval());
-                            }
-                            catch (InterruptedException e1) {
-                                log.trace("Repeat wait interrupted, exit", e1);
-                                running = false;
-                                break;
-                            }
-                        }
-                        else {
-                            throw new RuntimeException("Error process oplog record", e);
-                        }
-                    }
-                    log.trace("End of cycle iteration");
+                cursor = oplog.find(lastProcessedCondition).addOption(Bytes.QUERYOPTION_TAILABLE).addOption(Bytes.QUERYOPTION_AWAITDATA);
+
+                try {
+                    cursorCycle();
                 }
-                log.trace("Cycle is over");
+                catch (MongoException e) {
+                    log.error("Mongo error in cursor cycle, restart cycle after " + cfg.getOplogErrorTimeout() + " ms", e);
+                    try {
+                        Thread.sleep(cfg.getOplogErrorTimeout());
+                    }
+                    catch (InterruptedException e1) {
+                        log.trace("Restart cycle wait interrupted, exit", e1);
+                        running = false;
+                        break;
+                    }
+                }
             }
             log.trace("OplogMonitor exit");
+        }
+
+        private void cursorCycle()
+        {
+            log.trace("About to start cycle");
+            while (cursor.hasNext()) {
+                log.trace("Get next oplog record");
+                DBObject obj = cursor.next();
+                try {
+                    log.trace("Process next oplog record");
+                    handler.processOplogRecord(obj);
+                    lastProcessed = (BSONTimestamp) obj.get("ts");
+                    log.debug("Oplog record processed, ts={}", lastProcessed);
+                    tracker.setLastProcessed(lastProcessed);
+                }
+                catch (ProcessOplogException e) {
+                    log.error("Error process oplog record", e);
+                    if (cfg.isOplogContinueOnProcessError()) {
+                        log.trace("Repeat oplog read after {} ms", cfg.getOplogErrorTimeout());
+                        try {
+                            Thread.sleep(cfg.getOplogErrorTimeout());
+                        }
+                        catch (InterruptedException e1) {
+                            log.trace("Repeat wait interrupted, exit", e1);
+                            running = false;
+                            break;
+                        }
+                    }
+                    else {
+                        throw new RuntimeException("Error process oplog record", e);
+                    }
+                }
+                log.trace("End of cycle iteration");
+            }
+            log.trace("Cycle is over");
         }
 
         private BSONTimestamp getInitialLastProcessed()

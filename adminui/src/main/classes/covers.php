@@ -33,6 +33,15 @@ class covers
         return $scheduler;
     }
 
+    static function mongosyncEmitManager()
+    {
+        static $mongosyncEmitManager;
+        if (!$mongosyncEmitManager) {
+            $mongosyncEmitManager = self::createCoverProxy('mongosync-emitter-emitmanager');
+        }
+        return $mongosyncEmitManager;
+    }
+
     private static function createCoverProxy($path, $options = null)
     {
         return new \HessianClient(\b2\util\Path::concat(b2config()->platform['undercoverUrl'], $path), $options);
